@@ -1,4 +1,4 @@
-### 1. Requerimientos Funcionales (RF)
+## 1. Requerimientos Funcionales (RF)
 
 #### **A. Gestión de Usuarios y Autenticación (Auth-Service)**
 
@@ -38,7 +38,7 @@
 
 ---
 
-### 2. Requerimientos No Funcionales (RNF)
+## 2. Requerimientos No Funcionales (RNF)
 
 #### **A. Arquitectura y Comunicación**
 
@@ -63,3 +63,35 @@
 * **Escalabilidad:** Los microservicios deben ser capaces de escalar de forma independiente según la carga.
 * **Documentación:** Se debe documentar la arquitectura, diagramas de componentes, contratos gRPC y endpoints de la API.
 * **Disponibilidad:** El diseño debe permitir que la caída de un servicio (ej. Notificaciones) no detenga el flujo crítico de otros servicios.
+
+---
+
+## 3. Diagramas
+
+### Diagrama entidad relación
+
+<div align="center">
+  <img src="Diagramas/modelo-entidad-relación.png" alt="ERD" width="500">
+  <p><i>Figura 1: Diagrama entidad relación</i></p>
+</div>
+
+### Diagrama de Arquitectura de alto nivel
+
+<div align="center">
+  <img src="Diagramas/diagrama-de-arquitectura.jpg" alt="ERD" width="500">
+  <p><i>Figura 2: Diagrama de arquitectura de alto nivel</i></p>
+</div>
+
+### Diagrama de despliegue
+
+<div align="center">
+  <img src="Diagramas/diagrama-de-despliegue.png" alt="ERD" width="500">
+  <p><i>Figura 3: Diagrama de despliegue</i></p>
+</div>
+
+### Diagrama de actividades
+
+<div align="center">
+  <img src="Diagramas/diagrama-de-actividades.png" alt="ERD" width="500">
+  <p><i>Figura 4: Diagrama de actividades</i></p>
+</div>
