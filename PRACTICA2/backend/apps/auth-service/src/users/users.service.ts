@@ -2,9 +2,8 @@ import { Injectable, ConflictException, NotFoundException, UnauthorizedException
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { LoginUserDto } from './dto/login-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User, UserRole } from './entities/user.entity';
+import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -78,58 +77,5 @@ export class UsersService {
     if (result.affected === 0) {
       throw new NotFoundException('Usuario no encontrado');
     }
-  }
-
-  async validateUser(loginUserDto: LoginUserDto): Promise<User> {
-
-    // Extraer email y password
-    const { email, password } = loginUserDto;
-
-    const user = await this.findByEmail(email);
-
-    if (!user) {
-      throw new UnauthorizedException('Credenciales inválidas');
-    }
-
-    // Verificar la contraseña
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-
-    // Si la contraseña no es válida, lanzar una excepción
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Credenciales inválidas');
-    }
-
-    // Verificar si el usuario está activo
-    if (!user.isActive) {
-      throw new UnauthorizedException('Usuario inactivo');
-    }
-
-    return user;
-  }
-
-  async deactivateUser(id: string): Promise<User> {
-    
-    // ya no hago el codigo porque lo he puesto en el método findOne que esta arriba
-    const user = await this.findOne(id);
-
-    // Desactivar el usuario, no eliminarlo
-    user.isActive = false;
-
-    return await this.usersRepository.save(user);
-  }
-
-  async activateUser(id: string): Promise<User> {
-
-    // ya no hago el codigo porque lo he puesto en el método findOne que esta arriba
-    const user = await this.findOne(id);
-
-    // Activar el usuario
-    user.isActive = true;
-
-    return await this.usersRepository.save(user);
-  }
-
-  async getUserRole(role: UserRole): Promise<User[]> {
-    return await this.usersRepository.find({ where: { role } });
   }
 }

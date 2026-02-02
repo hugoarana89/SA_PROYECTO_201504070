@@ -3,9 +3,19 @@ import { AuthServiceController } from './auth-service.controller';
 import { AuthServiceService } from './auth-service.service';
 import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
+import { AuthModule } from './auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [UsersModule, DatabaseModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // Esto permite que DatabaseModule vea las variables sin volver a importar el módulo
+      envFilePath: '.env',
+    }),
+    UsersModule, 
+    DatabaseModule, 
+    AuthModule
+  ],
   controllers: [AuthServiceController],
   providers: [AuthServiceService],
 })
