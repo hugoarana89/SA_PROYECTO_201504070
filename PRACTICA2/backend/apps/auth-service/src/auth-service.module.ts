@@ -12,7 +12,7 @@ import { ConfigModule } from '@nestjs/config';
       isGlobal: true, // Esto permite que DatabaseModule vea las variables sin volver a importar el módulo
       envFilePath: '.env',
     }),
-    UsersModule, 
+    UsersModule,
     DatabaseModule, 
     AuthModule
   ],

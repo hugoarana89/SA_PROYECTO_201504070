@@ -7,8 +7,8 @@ import { AuthService } from '../auth.service';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    private readonly configService: ConfigService,
-    private readonly authService: AuthService,
+    private readonly configService: ConfigService, // esto es para el archivo .env
+    private readonly authService: AuthService, // Este es el que hace la validacion del usuario
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -17,6 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
+  // Este metodo se llama automaticamente por passport para validar el token
   async validate(payload: any) {
     return this.authService.validateUser(payload);
   }

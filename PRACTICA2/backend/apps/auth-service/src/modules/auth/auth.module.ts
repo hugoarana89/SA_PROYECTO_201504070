@@ -11,14 +11,14 @@ import { RolesGuard } from './guards/roles.guard';
 @Module({
   imports: [
     UsersModule,
-    PassportModule,
+    PassportModule, // Import PassportModule to use authentication strategies
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('JWT_SECRET', 'secret-key'),
         signOptions: {
-          expiresIn: configService.get('JWT_EXPIRES_IN', '24h'),
+          expiresIn: configService.get('JWT_EXPIRES_IN', '24h'), //aqui puedes ajustar el tiempo de expiracion
         },
       }),
     }),

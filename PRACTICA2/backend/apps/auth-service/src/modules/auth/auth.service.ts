@@ -10,14 +10,16 @@ import { UserResponseDto } from '../users/dto/user-response.dto';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
+    private readonly usersService: UsersService, // Inyectar UsersService en modo solo lectura
+    private readonly jwtService: JwtService, // Inyectar JwtService en modo solo lectura
   ) {}
 
+  // Método de registro
   async register(registerDto: RegisterDto): Promise<UserResponseDto> {
     return await this.usersService.create(registerDto);
   }
 
+  // Método de login
   async login(loginDto: LoginDto): Promise<TokenResponseDto> {
     // Usar el método del UsersService para validar credenciales
     const user = await this.usersService.validateCredentials(
@@ -36,7 +38,7 @@ export class AuthService {
       role: user.role,
     };
 
-    // Generar token
+    // Generar token de acceso
     const accessToken = this.jwtService.sign(payload);
 
     return {
@@ -50,6 +52,7 @@ export class AuthService {
     };
   }
 
+  // Método para validar usuario desde el JWT Strategy
   async validateUser(payload: any): Promise<User | null> {
     return await this.usersService.findByEmail(payload.email);
   }
