@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package auth;
+
+// Servicio de Autenticación
+service AuthService {
+  rpc Login (LoginRequest) returns (LoginResponse);
+  rpc Register (RegisterRequest) returns (RegisterResponse);
+  rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+  rpc GetUserProfile (GetUserProfileRequest) returns (UserProfileResponse);
+}
+
+// Servicio de Usuarios
+service UserService {
+  rpc CreateUser (CreateUserRequest) returns (UserResponse);
+  rpc GetUser (GetUserRequest) returns (UserResponse);
+  rpc GetUsersByRole (GetUsersByRoleRequest) returns (UsersResponse);
+  rpc UpdateUser (UpdateUserRequest) returns (UserResponse);
+  rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+  rpc DeactivateUser (DeactivateUserRequest) returns (UserResponse);
+  rpc ActivateUser (ActivateUserRequest) returns (UserResponse);
+}
+
+// Mensajes para AuthService
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string access_token = 1;
+  UserProfile user = 2;
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string role = 3;
+}
+
+message RegisterResponse {
+  UserResponse user = 1;
+}
+
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  TokenPayload payload = 2;
+}
+
+message GetUserProfileRequest {
+  string user_id = 1;
+}
+
+// Mensajes para UserService
+message CreateUserRequest {
+  string email = 1;
+  string password = 2;
+  string role = 3;
+}
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message GetUsersByRoleRequest {
+  string role = 1;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  optional string email = 2;
+  optional string password = 3;
+  optional string role = 4;
+  optional bool is_active = 5;
+}
+
+message DeleteUserRequest {
+  string id = 1;
+}
+
+message DeactivateUserRequest {
+  string id = 1;
+}
+
+message ActivateUserRequest {
+  string id = 1;
+}
+
+// Mensajes de Respuesta
+message UserResponse {
+  string id = 1;
+  string email = 2;
+  string role = 3;
+  bool is_active = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+message UserProfile {
+  string id = 1;
+  string email = 2;
+  string role = 3;
+  bool is_active = 4;
+}
+
+message TokenPayload {
+  string sub = 1;
+  string email = 2;
+  string role = 3;
+  int64 iat = 4;
+  int64 exp = 5;
+}
+
+message UsersResponse {
+  repeated UserResponse users = 1;
+}
+
+message DeleteUserResponse {
+  bool success = 1;
+}
