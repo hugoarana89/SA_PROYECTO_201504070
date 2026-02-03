@@ -16,7 +16,14 @@
       "entryFile": "main",
       "sourceRoot": "apps/api-gateway/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
+        "tsConfigPath": "apps/api-gateway/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../proto/**/*.proto",
+            "outDir": "dist/apps/api-gateway",
+            "watchAssets": true
+          }
+        ]
       }
     },
     "auth-service": {

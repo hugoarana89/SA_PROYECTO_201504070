@@ -1,20 +1,33 @@
 import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AuthServiceModule } from './auth-service.module';
-import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe';
+import { join } from 'path';
+import { GrpcValidationExceptionFilter } from './common/filters/grpc-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AuthServiceModule);
-
-  app.setGlobalPrefix('api/v2');
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,        // Elimina propiedades que no estén en el DTO
-      forbidNonWhitelisted: true, // Lanza error si envían propiedades extra
-      transform: true,        // Convierte los tipos automáticamente
-    }),
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    AuthServiceModule,
+    {
+      transport: Transport.GRPC,
+      options: {
+        package: 'auth',
+        protoPath: join(process.cwd(), 'proto/auth.proto'),
+        url: `0.0.0.0:${process.env.AUTH_GRPC_PORT || 50051}`,
+        loader: {
+          keepCase: true,
+          longs: String,
+          enums: String,
+          oneofs: true,
+        },
+      },
+    },
   );
 
-  await app.listen(process.env.port2 ?? 4002);
+  // Remover el ValidationPipe global
+  app.useGlobalFilters(new GrpcValidationExceptionFilter());
+
+  await app.listen();
+  console.log(`✅ Auth-Service gRPC running on port ${process.env.AUTH_GRPC_PORT || 50051}`);
 }
+
 bootstrap();
