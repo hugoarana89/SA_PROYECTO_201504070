@@ -30,6 +30,11 @@ export const getUser = () => {
 };
 
 export const isAuthenticated = () => {
+  return !!getAccessToken();
+};
+
+/*
+export const isAuthenticated = () => {
   const token = getAccessToken();
   if (!token) return false;
 
@@ -39,7 +44,7 @@ export const isAuthenticated = () => {
   } catch {
     return false;
   }
-};
+};*/
 
 // Función de logout actualizada para llamar al backend
 export const logout = async (): Promise<boolean> => {
@@ -48,7 +53,7 @@ export const logout = async (): Promise<boolean> => {
   try {
     if (refreshToken) {
       // Hacer la petición de logout al backend
-      const response = await fetch(`${CONFIG.API_URL}/auth/logout/`, {
+      const response = await fetch(`${CONFIG.API_URL}/auth/logout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,10 +75,4 @@ export const logout = async (): Promise<boolean> => {
   }
   
   return true;
-};
-
-// Función auxiliar para logout sin navegación (para usar en componentes)
-export const logoutAndNavigate = async (navigate: Function) => {
-  await logout();
-  navigate('/login');
 };

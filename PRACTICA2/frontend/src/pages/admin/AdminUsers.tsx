@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { getAccessToken } from '../../utils/authStorage';
 import { CONFIG } from '../../config/config';
+import { authFetch } from "../../utils/authFetch";
 
 interface UserFormData {
   email: string;
@@ -68,12 +69,8 @@ const AdminUsers: React.FC = () => {
       }
 
       console.log('Enviando datos:', token);
-      const response = await fetch(`${CONFIG.API_URL}/auth/register/admin`, {
+      const response = await authFetch(`${CONFIG.API_URL}/auth/register/admin`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
