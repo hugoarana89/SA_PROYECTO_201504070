@@ -5,8 +5,14 @@ package auth;
 service AuthService {
   rpc Register (RegisterRequest) returns (UserResponse);
   rpc Login (LoginRequest) returns (AuthResponse);
+  rpc RefreshToken (RefreshTokenRequest) returns (AuthResponse);
+  rpc Logout (LogoutRequest) returns (Empty);
   rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
 }
+
+/* ======================
+   REQUESTS
+   ====================== */
 
 message RegisterRequest {
   string email = 1;
@@ -19,12 +25,25 @@ message LoginRequest {
   string password = 2;
 }
 
-message AuthResponse {
-  string accessToken = 1;
+message RefreshTokenRequest {
+  string refreshToken = 1;
+}
+
+message LogoutRequest {
+  string refreshToken = 1;
 }
 
 message ValidateTokenRequest {
   string token = 1;
+}
+
+/* ======================
+   RESPONSES
+   ====================== */
+
+message AuthResponse {
+  string accessToken = 1;
+  string refreshToken = 2;
 }
 
 message ValidateTokenResponse {
@@ -39,3 +58,9 @@ message UserResponse {
   string email = 2;
   string role = 3;
 }
+
+/* ======================
+   esto es para logout, devuelve vacío
+   ====================== */
+
+message Empty {}

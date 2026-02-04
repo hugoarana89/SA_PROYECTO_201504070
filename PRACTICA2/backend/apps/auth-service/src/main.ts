@@ -11,6 +11,7 @@ async function bootstrap() {
       transport: Transport.GRPC,
       options: {
         package: 'auth',
+        // busca el archivo proto en la carpeta proto en la raiz del proyecto
         protoPath: join(process.cwd(), 'proto/auth.proto'),
         url: `0.0.0.0:${process.env.AUTH_GRPC_PORT || 50051}`,
         loader: {

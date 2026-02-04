@@ -12,7 +12,8 @@ import { AuthService } from './auth.service';
         transport: Transport.GRPC,
         options: {
           package: 'auth',
-          protoPath: join(process.cwd(), 'proto/auth.proto'),
+          // busca el archivo proto en la carpeta proto en la raiz del proyecto
+          protoPath: join(process.cwd(), 'proto/auth.proto'), 
           url: `0.0.0.0:${process.env.AUTH_GRPC_PORT || 50051}`,
           loader: {
           keepCase: true,
@@ -25,7 +26,7 @@ import { AuthService } from './auth.service';
       },
     ]),
   ],
-  controllers: [AuthController],
-  providers: [AuthService],
+  controllers: [AuthController], // Agrega el AuthController al módulo
+  providers: [AuthService], // Agrega el AuthService al módulo
 })
 export class AuthModule {}

@@ -15,13 +15,15 @@ export class AuthService implements OnModuleInit {
   private authGrpc: AuthGrpcService;
 
   constructor(
-    @Inject('AUTH_SERVICE') private readonly client: ClientGrpc,
+    @Inject('AUTH_SERVICE') private readonly client: ClientGrpc, // inyecta el cliente gRPC que trae @nestjs/microservices
   ) {}
 
+  // se ejecuta cuando el módulo se inicializa
   onModuleInit() {
     this.authGrpc = this.client.getService<AuthGrpcService>('AuthService');
   }
 
+  // llama al método Login del servicio gRPC
   async login(email: string, password: string) {
     try {
       return await lastValueFrom(
@@ -32,6 +34,18 @@ export class AuthService implements OnModuleInit {
     }
   }
 
+  // llama al método RefreshToken del servicio gRPC
+  async refreshToken(refreshToken: string) {
+    try {
+      return await lastValueFrom(
+        from(this.authGrpc.RefreshToken({ refreshToken })),
+      );
+    } catch (error: any) {
+      this.handleGrpcError(error);
+    }
+  }
+
+  // llama al método Register del servicio gRPC
   async register(email: string, password: string, role: string) {
     try {
       return await lastValueFrom(
@@ -42,6 +56,7 @@ export class AuthService implements OnModuleInit {
     }
   }
 
+  // valida si un token es valido llamando al método ValidateToken del servicio gRPC
   async validateToken(token: string) {
     try {
       return await lastValueFrom(
@@ -52,9 +67,18 @@ export class AuthService implements OnModuleInit {
     }
   }
 
-  /**
-   * Traduce errores gRPC a HTTP
-   */
+  // llama al método Logout del servicio gRPC
+  async logout(refreshToken: string) {
+    try {
+      return await lastValueFrom(
+        from(this.authGrpc.Logout({ refreshToken })),
+      );
+    } catch (error: any) {
+      this.handleGrpcError(error);
+    }
+  }
+
+  // maneja los errores gRPC y los convierte en excepciones HTTP
   private handleGrpcError(error: any): never {
     switch (error.code) {
       case status.ALREADY_EXISTS:

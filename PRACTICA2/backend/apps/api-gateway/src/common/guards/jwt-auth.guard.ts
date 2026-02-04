@@ -6,6 +6,9 @@ import {
 } from '@nestjs/common';
 import { AuthService } from '../../auth/auth.service';
 
+// Estos guards funcionan antes de entrar al controlador, valida el token JWT
+// Es como los middlewares que se usan en express
+
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(private readonly authService: AuthService) {}

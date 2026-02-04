@@ -15,6 +15,26 @@ CREATE TABLE users (
     INDEX idx_role (role)
 );
 
+CREATE TABLE refresh_tokens (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL,
+    token_hash VARCHAR(255) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    revoked BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_refresh_user
+      FOREIGN KEY (user_id)
+      REFERENCES users(id)
+      ON DELETE CASCADE,
+
+    INDEX idx_user_id (user_id),
+    INDEX idx_token_hash (token_hash),
+    INDEX idx_expires_at (expires_at)
+);
+
+
 -- Database: restaurant_db
 CREATE DATABASE IF NOT EXISTS restaurant_db;
 USE restaurant_db;
