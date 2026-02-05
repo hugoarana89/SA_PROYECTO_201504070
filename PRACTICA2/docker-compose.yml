@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  mysql-auth:
+    image: mysql:8.0
+    container_name: mysql-auth
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 201504070
+      MYSQL_DATABASE: auth_db
+    ports:
+      #- "3306:3306" esto es porque tengo en windows el mysql instalado y uso el 3306
+      - "3307:3306"
+    volumes:
+      - mysql_auth_data:/var/lib/mysql
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+
+  auth-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.auth-service
+    container_name: auth-service
+    env_file:
+      - ./backend/.env
+    environment:
+      DB_HOST: mysql-auth
+    depends_on:
+      mysql-auth:
+        condition: service_healthy
+    ports:
+      - "50051:50051"
+
+  api-gateway:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.api-gateway
+    container_name: api-gateway
+    env_file:
+      - ./backend/.env
+    environment:
+      AUTH_SERVICE_URL: auth-service:50051
+    depends_on:
+      - auth-service
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - api-gateway
+
+volumes:
+  mysql_auth_data:
