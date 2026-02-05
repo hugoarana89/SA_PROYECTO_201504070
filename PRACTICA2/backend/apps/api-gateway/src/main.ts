@@ -6,7 +6,7 @@ import morgan from 'morgan';
 async function bootstrap() {
   const app = await NestFactory.create(ApiGatewayModule);
 
-  app.setGlobalPrefix('api'); // prefijo global para todas las rutas
+  //app.setGlobalPrefix('api'); // prefijo global para todas las rutas
 
   // Configuración del pipe de validación global
 
@@ -24,6 +24,14 @@ async function bootstrap() {
     credentials: true,
   });
 
+
+  morgan.token('body', (req: any) => JSON.stringify(req.body));
+    app.use(
+      morgan(':method :url :status :response-time ms - body: :body'),
+    );
+
+    
+  /*
   // para ver en consola las peticiones HTTP
   if (process.env.NODE_ENV !== 'production') {
     //app.use(morgan('dev'));
@@ -31,7 +39,7 @@ async function bootstrap() {
     app.use(
       morgan(':method :url :status :response-time ms - body: :body'),
     );
-  }
+  }*/
 
 
   const port = process.env.GATEWAY_PORT || 4000;
