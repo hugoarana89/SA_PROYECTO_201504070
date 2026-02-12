@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package order;
+
+service OrderService {
+  rpc CreateOrder (CreateOrderRequest) returns (OrderResponse);
+  rpc CancelOrder (CancelOrderRequest) returns (OrderResponse);
+  rpc AcceptOrder (AcceptOrderRequest) returns (OrderResponse);
+  rpc RejectOrder (RejectOrderRequest) returns (OrderResponse);
+  rpc CompleteOrder (CompleteOrderRequest) returns (OrderResponse);
+  rpc GetOrder (GetOrderRequest) returns (OrderResponse);
+  rpc ListOrders (ListOrdersRequest) returns (ListOrdersResponse);
+  rpc ListRestaurantOrders (ListRestaurantOrdersRequest) returns (ListOrdersResponse);
+  rpc ListClientOrders (ListClientOrdersRequest) returns (ListOrdersResponse);
+}
+
+/* ======================
+   REQUESTS
+   ====================== */
+message CreateOrderRequest {
+  string client_id = 1;
+  string restaurant_id = 2;
+  repeated OrderItemRequest items = 3;
+}
+
+message OrderItemRequest {
+  string menu_item_id = 1;
+  int32 quantity = 2;
+  double price = 3;
+  string product_name = 4;
+}
+
+message CancelOrderRequest {
+  string order_id = 1;
+  string client_id = 2;
+}
+
+message AcceptOrderRequest {
+  string order_id = 1;
+  string restaurant_id = 2;
+}
+
+message RejectOrderRequest {
+  string order_id = 1;
+  string restaurant_id = 2;
+  string reason = 3;
+}
+
+message CompleteOrderRequest {
+  string order_id = 1;
+  string restaurant_id = 2;
+}
+
+message GetOrderRequest {
+  string order_id = 1;
+}
+
+message ListOrdersRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  string status = 3;
+}
+
+message ListRestaurantOrdersRequest {
+  string restaurant_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+  string status = 4;
+}
+
+message ListClientOrdersRequest {
+  string client_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+  string status = 4;
+}
+
+/* ======================
+   RESPONSES
+   ====================== */
+message OrderResponse {
+  string id = 1;
+  string client_id = 2;
+  string restaurant_id = 3;
+  string status = 4;
+  double total_amount = 5;
+  repeated OrderItemResponse items = 6;
+  string created_at = 7;
+  string updated_at = 8;
+  string rejection_reason = 9;
+}
+
+message OrderItemResponse {
+  string id = 1;
+  string menu_item_id = 2;
+  string product_name = 3;
+  int32 quantity = 4;
+  double unit_price = 5;
+  double subtotal = 6;
+}
+
+message ListOrdersResponse {
+  repeated OrderResponse orders = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
