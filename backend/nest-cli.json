@@ -43,6 +43,24 @@
       "compilerOptions": {
         "tsConfigPath": "apps/backend/tsconfig.app.json"
       }
+    },
+    "order-service": {
+      "type": "application",
+      "root": "apps/order-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/order-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/order-service/tsconfig.app.json"
+      }
+    },
+    "restaurant-service": {
+      "type": "application",
+      "root": "apps/restaurant-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/restaurant-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/restaurant-service/tsconfig.app.json"
+      }
     }
   }
 }
