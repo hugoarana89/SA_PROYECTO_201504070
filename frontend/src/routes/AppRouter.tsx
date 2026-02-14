@@ -50,11 +50,11 @@ export const RouterApp = createBrowserRouter([
         ),
       },
 
-      // ADMIN - Requiere rol ADMIN
+      // ADMIN - Requiere rol ADMINISTRADOR
       {
         path: "admin/restaurants",
         element: (
-          <PrivateRoute roles={['ADMIN']}>
+          <PrivateRoute roles={['ADMINISTRADOR']}>
             <AdminRestaurants />
           </PrivateRoute>
         ),
@@ -62,7 +62,7 @@ export const RouterApp = createBrowserRouter([
       {
         path: "admin/users",
         element: (
-          <PrivateRoute roles={['ADMIN']}>
+          <PrivateRoute roles={['ADMINISTRADOR']}>
             <AdminUsers />
           </PrivateRoute>
         ),
@@ -86,11 +86,11 @@ export const RouterApp = createBrowserRouter([
         ),
       },
 
-      // DELIVERY - Requiere rol DELIVERY
+      // REPARTIDOR - Requiere rol REPARTIDOR
       {
         path: "delivery/available",
         element: (
-          <PrivateRoute roles={['DELIVERY']}>
+          <PrivateRoute roles={['REPARTIDOR']}>
             <AvailableDeliveries />
           </PrivateRoute>
         ),
@@ -98,7 +98,7 @@ export const RouterApp = createBrowserRouter([
       {
         path: "delivery/active",
         element: (
-          <PrivateRoute roles={['DELIVERY']}>
+          <PrivateRoute roles={['REPARTIDOR']}>
             <ActiveDelivery />
           </PrivateRoute>
         ),
