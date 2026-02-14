@@ -844,7 +844,7 @@ GET http://localhost:4000/restaurants?page=1&limit=10&onlyActive=true&search=gra
 
 # 👉 **ORDEN SERVICE**
 
-El servicio de Órdenes está destinado para los roles de **CLIENTE**, **RESTAURANTE** y **ADMINISTRADOR**.
+El servicio de Órdenes está destinado para los roles de **CLIENTE** y **RESTAURANTE**.
 Este microservicio permite la gestión completa del ciclo de vida de una orden, desde su creación hasta su finalización o cancelación.
 
 Los estados posibles de una orden son:
@@ -1263,7 +1263,7 @@ Content-Type: application/json
 ```
 ---
 
-### 7. **Listar Órdenes del Restaurante** (RESTAURANTE / ADMINISTRADOR)
+### 7. **Listar Órdenes del Restaurante** (RESTAURANTE)
 
 ```
 GET http://localhost:4000/orders/restaurant/:restaurantId?page=1&limit=10&status=CREADA

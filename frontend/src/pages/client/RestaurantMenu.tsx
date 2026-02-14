@@ -1,16 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeftIcon, ClockIcon, MapPinIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeftIcon, 
+  ClockIcon, 
+  MapPinIcon, 
+  PhoneIcon,
+  ShoppingCartIcon,
+  PlusIcon,
+  MinusIcon
+} from '@heroicons/react/24/outline';
 import { restaurantService, menuService } from '../../services/restaurant.service';
 import type { Restaurant, MenuItem } from '../../types/restaurant.types';
+import { useCart } from '../../context/CartContext';
 import Spinner from '../../components/Spinner';
+import { isAuthenticated } from '../../utils/authStorage';
 
 const RestaurantMenu: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [showCartNotification, setShowCartNotification] = useState(false);
+  
+  const { addToCart, cart, getCartCount } = useCart();
 
   useEffect(() => {
     if (id) {
@@ -25,11 +40,19 @@ const RestaurantMenu: React.FC = () => {
       setLoading(true);
       const [restaurantData, menuData] = await Promise.all([
         restaurantService.getRestaurantById(id),
-        menuService.getMenuItems(id, { onlyAvailable: true })
+        menuService.getRestaurantMenu(id)
       ]);
       
       setRestaurant(restaurantData);
       setMenuItems(menuData.items);
+      
+      // Inicializar cantidades en 0
+      const initialQuantities: Record<string, number> = {};
+      menuData.items.forEach(item => {
+        initialQuantities[item.id] = 0;
+      });
+      setQuantities(initialQuantities);
+      
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar datos del restaurante');
@@ -38,9 +61,59 @@ const RestaurantMenu: React.FC = () => {
     }
   };
 
+  const handleQuantityChange = (itemId: string, delta: number) => {
+    setQuantities(prev => {
+      const newValue = Math.max(0, (prev[itemId] || 0) + delta);
+      return { ...prev, [itemId]: newValue };
+    });
+  };
+
+  const handleAddToCart = (item: MenuItem) => {
+    const quantity = quantities[item.id] || 0;
+    
+    if (quantity === 0) {
+      alert('Selecciona una cantidad mayor a 0');
+      return;
+    }
+
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+
+    if (!restaurant) return;
+
+    // Verificar si ya hay items de otro restaurante en el carrito
+    if (cart && cart.restaurant_id !== restaurant.id) {
+      if (!window.confirm('Tu carrito contiene items de otro restaurante. ¿Deseas vaciarlo y agregar los nuevos items?')) {
+        return;
+      }
+      // Aquí podríamos limpiar el carrito, pero la lógica de addToCart ya maneja esto
+    }
+
+    // Agregar al carrito la cantidad seleccionada
+    for (let i = 0; i < quantity; i++) {
+      addToCart({
+        menu_item_id: item.id,
+        product_name: item.name,
+        price: item.price,
+        restaurant_id: restaurant.id,
+        restaurant_name: restaurant.name,
+      });
+    }
+
+    // Resetear cantidad a 0
+    setQuantities(prev => ({ ...prev, [item.id]: 0 }));
+
+    // Mostrar notificación
+    setShowCartNotification(true);
+    setTimeout(() => setShowCartNotification(false), 3000);
+  };
+
   const defaultImage = 'https://placehold.jp/24/3d4070/ffffff/400x300.png?text=Platillo';
   const defaultRestaurantImage = 'https://placehold.jp/24/3d4070/ffffff/1200x400.png?text=Restaurante';
-  
+
+  const cartCount = getCartCount();
 
   if (loading) {
     return (
@@ -63,6 +136,16 @@ const RestaurantMenu: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Notificación de carrito */}
+      {showCartNotification && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-down">
+          <div className="flex items-center">
+            <ShoppingCartIcon className="h-5 w-5 mr-2" />
+            <span>Producto agregado al carrito</span>
+          </div>
+        </div>
+      )}
+
       {/* Header del restaurante */}
       <div className="relative h-64 md:h-80">
         <img
@@ -73,28 +156,46 @@ const RestaurantMenu: React.FC = () => {
         <div className="absolute inset-0 bg-black bg-opacity-40" />
         <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
           <div className="max-w-7xl mx-auto">
-            <Link
-              to="/"
-              className="inline-flex items-center text-white mb-4 hover:text-gray-200"
-            >
-              <ArrowLeftIcon className="h-5 w-5 mr-2" />
-              Volver a restaurantes
-            </Link>
-            <h1 className="text-4xl font-bold mb-2">{restaurant.name}</h1>
-            <p className="text-lg mb-4">{restaurant.description}</p>
-            <div className="flex flex-wrap gap-4 text-sm">
-              <span className="flex items-center">
-                <ClockIcon className="h-5 w-5 mr-2" />
-                {restaurant.opening_time} - {restaurant.closing_time}
-              </span>
-              <span className="flex items-center">
-                <MapPinIcon className="h-5 w-5 mr-2" />
-                {restaurant.address}
-              </span>
-              <span className="flex items-center">
-                <PhoneIcon className="h-5 w-5 mr-2" />
-                {restaurant.phone}
-              </span>
+            <div className="flex justify-between items-end">
+              <div>
+                <Link
+                  to="/"
+                  className="inline-flex items-center text-white mb-4 hover:text-gray-200"
+                >
+                  <ArrowLeftIcon className="h-5 w-5 mr-2" />
+                  Volver a restaurantes
+                </Link>
+                <h1 className="text-4xl font-bold mb-2">{restaurant.name}</h1>
+                <p className="text-lg mb-4">{restaurant.description}</p>
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <span className="flex items-center">
+                    <ClockIcon className="h-5 w-5 mr-2" />
+                    {restaurant.opening_time} - {restaurant.closing_time}
+                  </span>
+                  <span className="flex items-center">
+                    <MapPinIcon className="h-5 w-5 mr-2" />
+                    {restaurant.address}
+                  </span>
+                  <span className="flex items-center">
+                    <PhoneIcon className="h-5 w-5 mr-2" />
+                    {restaurant.phone}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Botón del carrito */}
+              <Link
+                to="/client/orders"
+                className="bg-white text-indigo-600 px-6 py-3 rounded-lg shadow-lg hover:bg-gray-100 transition-colors flex items-center"
+              >
+                <ShoppingCartIcon className="h-6 w-6 mr-2" />
+                <span className="font-semibold">Ver Carrito</span>
+                {cartCount > 0 && (
+                  <span className="ml-2 bg-indigo-600 text-white px-2 py-1 rounded-full text-xs">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
             </div>
           </div>
         </div>
@@ -133,12 +234,43 @@ const RestaurantMenu: React.FC = () => {
                   
                   <p className="text-gray-600 text-sm mb-4">{item.description}</p>
                   
-                  {item.is_available ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Disponible
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="flex items-center border border-gray-300 rounded-lg">
+                      <button
+                        onClick={() => handleQuantityChange(item.id, -1)}
+                        className="px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-l-lg"
+                        disabled={!item.is_available}
+                      >
+                        <MinusIcon className="h-4 w-4" />
+                      </button>
+                      <span className="px-4 py-2 text-gray-800 font-medium border-x border-gray-300">
+                        {quantities[item.id] || 0}
+                      </span>
+                      <button
+                        onClick={() => handleQuantityChange(item.id, 1)}
+                        className="px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-r-lg"
+                        disabled={!item.is_available}
+                      >
+                        <PlusIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={() => handleAddToCart(item)}
+                      disabled={!item.is_available || (quantities[item.id] || 0) === 0}
+                      className={`px-4 py-2 rounded-lg font-medium flex items-center ${
+                        item.is_available && (quantities[item.id] || 0) > 0
+                          ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      <PlusIcon className="h-4 w-4 mr-1" />
+                      Agregar
+                    </button>
+                  </div>
+                  
+                  {!item.is_available && (
+                    <span className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                       No disponible
                     </span>
                   )}
