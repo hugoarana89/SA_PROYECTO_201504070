@@ -72,9 +72,9 @@ CREATE TABLE menu_items (
     INDEX idx_is_available (is_available)
 );
 
--- Database: order_service
-CREATE DATABASE IF NOT EXISTS order_service_db;
-USE order_service_db;
+-- Database: order_db
+CREATE DATABASE IF NOT EXISTS order_db;
+USE order_db;
 
 -- Tabla de ordenes
 CREATE TABLE orders (

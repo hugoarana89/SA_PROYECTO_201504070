@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Logger } from '@nestjs/common';
 import { GrpcMethod, Payload } from '@nestjs/microservices';
 import { GrpcValidate } from '../../../common/decorators/grpc-validate.decorator';
 
@@ -40,6 +40,7 @@ import { Price } from '../../../domain/value-objects/price.value-object';
 
 @Controller()
 export class RestaurantCatalogGrpcController {
+  private readonly logger = new Logger(RestaurantCatalogGrpcController.name);
   constructor(
     // Restaurant Use Cases
     private readonly createRestaurantUseCase: CreateRestaurantUseCase,
@@ -61,8 +62,12 @@ export class RestaurantCatalogGrpcController {
   /* ======================
      MÉTODOS DE VALIDACIÓN
      ====================== */
-  @GrpcValidate(ValidateOrderItemsRequestDto, 'ValidateOrderItems')
-  async validateOrderItems(@Payload() data: ValidateOrderItemsRequestDto) {
+ @GrpcValidate(ValidateOrderItemsRequestDto, 'ValidateOrderItems')
+async validateOrderItems(@Payload() data: ValidateOrderItemsRequestDto) {
+  this.logger.log(`📥 Recibida petición de validación para restaurante: ${data.restaurant_id}`);
+  this.logger.debug(`Items a validar: ${JSON.stringify(data.items)}`);
+  
+  try {
     const result = await this.validateOrderItemsUseCase.execute(
       data.restaurant_id,
       data.items.map(item => ({
@@ -72,7 +77,10 @@ export class RestaurantCatalogGrpcController {
       })),
     );
 
-    return {
+    this.logger.log(`✅ Validación completada. Válido: ${result.valid}`);
+    
+    // ✅ CONSTRUIR LA RESPUESTA EXPLÍCITAMENTE
+    const response = {
       valid: result.valid,
       errors: result.errors.map(error => ({
         code: error.code,
@@ -89,7 +97,15 @@ export class RestaurantCatalogGrpcController {
       })),
       total_amount: result.totalAmount,
     };
+
+    this.logger.debug(`📤 Respuesta: ${JSON.stringify(response)}`);
+    return response;
+    
+  } catch (error) {
+    this.logger.error(`❌ Error en validación: ${error.message}`);
+    throw error;
   }
+}
 
   /* ======================
      MÉTODOS DE RESTAURANTES

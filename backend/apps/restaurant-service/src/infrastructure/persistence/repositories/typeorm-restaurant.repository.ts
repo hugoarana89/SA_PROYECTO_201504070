@@ -67,7 +67,7 @@ export class TypeOrmRestaurantRepository implements RestaurantRepository {
       const updated = await this.repository.findOne({ where: { id } });
 
       if (!updated) {
-        throw new Error(`Restaurant with id ${id} not found`);
+        throw new Error(`Restaurante con id ${id} no encontrado`);
       }
 
       this.logger.log(`Restaurante actualizado con ID: ${id}`);

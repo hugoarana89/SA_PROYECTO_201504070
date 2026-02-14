@@ -9,32 +9,44 @@ import { Role } from '../common/enums/role.enum';
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
-  // Endpoint http para login
+  /**
+   * POST /auth/login - Iniciar sesión
+   */
   @Post('login')
   login(@Body() body: { email: string; password: string }) {
     return this.authService.login(body.email, body.password);
   }
 
-  // Endpoint http para refrescar el token, genera un nuevo access token y refresh token
-  @Post('refresh')
-  refresh(@Body() body: { refreshToken: string }) {
-    return this.authService.refreshToken(body.refreshToken);
-  }
-
-  // Endpoint http para registrar solo clientes (los demas roles no se registran por este endpoint)
-  @Post('register/client')
-  registerClient(@Body() body: { email: string; password: string }) {
-    return this.authService.register(body.email, body.password, Role.CLIENTE);
-  }
-
-  // Endpoint http para logout (elimina el refresh token) y coloca el campo isRevoked en true
+  /**
+   * POST /auth/logout - Cerrar sesión
+   * Elimina el refresh token y coloca el campo isRevoked en true
+   */
   @Post('logout')
   logout(@Body() body: { refreshToken: string }) {
     return this.authService.logout(body.refreshToken);
   }
 
-  // Endpoint http para registrar administradores (solo accesible por otros administradores)
-  // usa guards para proteger el endpoint
+  /**
+   * POST /auth/refresh - Refrescar token
+   * Genera un nuevo access token y refresh token
+   */
+  @Post('refresh')
+  refresh(@Body() body: { refreshToken: string }) {
+    return this.authService.refreshToken(body.refreshToken);
+  }
+
+  /**
+   * POST /auth/register/client - Registrar un nuevo cliente
+   */
+  @Post('register/client')
+  registerClient(@Body() body: { email: string; password: string }) {
+    return this.authService.register(body.email, body.password, Role.CLIENTE);
+  }
+
+  /**
+   * POST /auth/register/admin - Registrar un nuevo administrador (solo accesible por otros administradores)
+   * Usa guards para proteger el endpoint
+   */
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMINISTRADOR)
   @Post('register/admin')

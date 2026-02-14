@@ -14,6 +14,9 @@ export class RestaurantController {
 
   // ==================== RESTAURANTES ====================
   
+  /**
+   * POST /restaurants - Crear un nuevo restaurante (ADMINISTRADOR)
+   */
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMINISTRADOR)
@@ -21,6 +24,9 @@ export class RestaurantController {
     return this.restaurantService.createRestaurant(body, req.user.userId);
   }
 
+  /**
+   * PUT /restaurants/:id - Actualizar un restaurante (ADMINISTRADOR)
+   */
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMINISTRADOR)
@@ -32,6 +38,9 @@ export class RestaurantController {
     return this.restaurantService.updateRestaurant(id, body, req.user.userId);
   }
 
+  /**
+   * DELETE /restaurants/:id - Eliminar un restaurante (ADMINISTRADOR)
+   */
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMINISTRADOR)
@@ -39,11 +48,18 @@ export class RestaurantController {
     return this.restaurantService.deleteRestaurant(id, req.user.userId);
   }
 
+  /**
+   * GET /restaurants/:id - Obtener un restaurante por ID
+   */
   @Get(':id')
   async getRestaurant(@Param('id') id: string) {
     return this.restaurantService.getRestaurant(id);
   }
 
+  /**
+   * GET /restaurants - Listar restaurantes con paginación, búsqueda y filtro por estado
+   * Query params: page, limit, onlyActive, search
+   */
   @Get()
   async listRestaurants(
     @Query('page') page: string = '1',
@@ -61,6 +77,9 @@ export class RestaurantController {
 
   // ==================== MENÚ ====================
   
+  /**
+   * POST /restaurants/:restaurantId/menu-items - Crear un nuevo ítem de menú para un restaurante (RESTAURANTE, ADMINISTRADOR)
+   */
   @Post(':restaurantId/menu-items')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.RESTAURANTE, Role.ADMINISTRADOR)
@@ -74,7 +93,10 @@ export class RestaurantController {
     });
   }
 
-  @Put('menu-items/:id')
+  /**
+   * PUT /restaurants/:restaurantId/menu-items/:id - Actualizar un ítem de menú (RESTAURANTE, ADMINISTRADOR)
+   */
+  @Put(':restaurantId/menu-items/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.RESTAURANTE, Role.ADMINISTRADOR)
   async updateMenuItem(
@@ -84,6 +106,9 @@ export class RestaurantController {
     return this.restaurantService.updateMenuItem(id, body);
   }
 
+  /**
+   * DELETE /restaurants/:restaurantId/menu-items/:id - Eliminar un ítem de menú (RESTAURANTE, ADMINISTRADOR)
+   */ 
   @Delete('menu-items/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.RESTAURANTE, Role.ADMINISTRADOR)
@@ -94,11 +119,20 @@ export class RestaurantController {
     return this.restaurantService.deleteMenuItem(id, restaurantId);
   }
 
+  /**
+   * GET /restaurants/:restaurantId/menu-items/:id - Obtener un ítem de menú por ID
+   */
   @Get(':restaurantId/menu')
   async getRestaurantMenu(@Param('restaurantId') restaurantId: string) {
     return this.restaurantService.getRestaurantMenu(restaurantId);
   }
 
+  /**
+   * GET /restaurants/:restaurantId/menu-items - Listar ítems de menú de un restaurante con paginación y filtro por disponibilidad
+   * Query params: onlyAvailable, page, limit
+   * Si onlyAvailable=true, solo devuelve los ítems que están disponibles (is_available=true)
+   * Si no se especifica onlyAvailable, devuelve todos los ítems del menú
+   */
   @Get(':restaurantId/menu-items')
   async listMenuItems(
     @Param('restaurantId') restaurantId: string,

@@ -3,11 +3,11 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { RestaurantController } from './restaurant.controller';
 import { RestaurantService } from './restaurant.service';
 import { join } from 'path';
-import { AuthModule } from '../auth/auth.module'; // ← IMPORTAR AUTH MODULE
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
-    AuthModule, // ← AÑADIR AQUÍ
+    AuthModule,
     ClientsModule.register([
       {
         name: 'RESTAURANT_CATALOG_SERVICE',
@@ -35,4 +35,4 @@ import { AuthModule } from '../auth/auth.module'; // ← IMPORTAR AUTH MODULE
   providers: [RestaurantService],
   exports: [RestaurantService],
 })
-export class RestaurantModule {}
+export class RestaurantModule { }

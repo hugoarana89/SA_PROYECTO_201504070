@@ -48,6 +48,7 @@ export class ValidateOrderItemsUseCase {
   ): Promise<ValidateOrderItemsResult> {
     // 1. Verificar que el restaurante existe y está activo
     const restaurant = await this.restaurantRepository.findById(restaurantId);
+
     if (!restaurant) {
       throw new RestaurantNotFoundException(restaurantId);
     }
