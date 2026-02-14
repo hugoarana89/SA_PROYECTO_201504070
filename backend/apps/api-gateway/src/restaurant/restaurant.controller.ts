@@ -96,7 +96,7 @@ export class RestaurantController {
   /**
    * PUT /restaurants/:restaurantId/menu-items/:id - Actualizar un ítem de menú (RESTAURANTE, ADMINISTRADOR)
    */
-  @Put(':restaurantId/menu-items/:id')
+  @Put('menu-items/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.RESTAURANTE, Role.ADMINISTRADOR)
   async updateMenuItem(

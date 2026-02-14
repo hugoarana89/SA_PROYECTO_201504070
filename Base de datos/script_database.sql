@@ -167,3 +167,4 @@ CREATE TABLE notifications (
     INDEX idx_csent_at (sent_at),
 	INDEX idx_delivery_user_id (delivery_user_id)
 );
+

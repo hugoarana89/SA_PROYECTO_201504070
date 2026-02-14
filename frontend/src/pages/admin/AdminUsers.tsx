@@ -68,7 +68,6 @@ const AdminUsers: React.FC = () => {
         throw new Error('No hay token de autenticación');
       }
 
-      console.log('Enviando datos:', token);
       const response = await authFetch(`${CONFIG.API_URL}/auth/register/admin`, {
         method: 'POST',
         body: JSON.stringify({

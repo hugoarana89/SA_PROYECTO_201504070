@@ -127,7 +127,7 @@ export class OrderController {
    */
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMINISTRADOR)
+  @Roles(Role.ADMINISTRADOR, Role.RESTAURANTE)
   async listAllOrders(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
