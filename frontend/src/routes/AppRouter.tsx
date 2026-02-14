@@ -18,57 +18,90 @@ import NotFound from "../pages/errors/NotFound";
 import Unauthorized from "../pages/errors/Unauthorized";
 
 export const RouterApp = createBrowserRouter([
+  // Ruta principal con layout
   {
     path: "/",
-    element: (
-      <PrivateRoute>
-        <NavBar />
-      </PrivateRoute>
-    ),
+    element: <NavBar />,
     errorElement: <NotFound />,
     children: [
-      // CLIENTE
+      // CLIENTE - Requiere rol CLIENTE
       {
         index: true,
-        element: <HomeCatalog />,
+        element: (
+          <PrivateRoute roles={['CLIENTE']}>
+            <HomeCatalog />
+          </PrivateRoute>
+        ),
       },
       {
         path: "client/restaurants/:id",
-        element: <RestaurantMenu />,
+        element: (
+          <PrivateRoute roles={['CLIENTE']}>
+            <RestaurantMenu />
+          </PrivateRoute>
+        ),
       },
       {
         path: "client/orders",
-        element: <MyOrders />,
+        element: (
+          <PrivateRoute roles={['CLIENTE']}>
+            <MyOrders />
+          </PrivateRoute>
+        ),
       },
 
-      // ADMIN
+      // ADMIN - Requiere rol ADMIN
       {
         path: "admin/restaurants",
-        element: <AdminRestaurants />,
+        element: (
+          <PrivateRoute roles={['ADMIN']}>
+            <AdminRestaurants />
+          </PrivateRoute>
+        ),
       },
       {
         path: "admin/users",
-        element: <AdminUsers />,
+        element: (
+          <PrivateRoute roles={['ADMIN']}>
+            <AdminUsers />
+          </PrivateRoute>
+        ),
       },
 
-      // RESTAURANTE
+      // RESTAURANTE - Requiere rol RESTAURANTE
       {
         path: "restaurant/orders",
-        element: <IncomingOrders />,
+        element: (
+          <PrivateRoute roles={['RESTAURANTE']}>
+            <IncomingOrders />
+          </PrivateRoute>
+        ),
       },
       {
         path: "restaurant/menu",
-        element: <ManageMenu />,
+        element: (
+          <PrivateRoute roles={['RESTAURANTE']}>
+            <ManageMenu />
+          </PrivateRoute>
+        ),
       },
 
-      // DELIVERY
+      // DELIVERY - Requiere rol DELIVERY
       {
         path: "delivery/available",
-        element: <AvailableDeliveries />,
+        element: (
+          <PrivateRoute roles={['DELIVERY']}>
+            <AvailableDeliveries />
+          </PrivateRoute>
+        ),
       },
       {
         path: "delivery/active",
-        element: <ActiveDelivery />,
+        element: (
+          <PrivateRoute roles={['DELIVERY']}>
+            <ActiveDelivery />
+          </PrivateRoute>
+        ),
       },
 
       // ERRORES

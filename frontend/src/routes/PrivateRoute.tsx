@@ -2,6 +2,8 @@ import { Navigate } from "react-router-dom";
 import { getUser, isAuthenticated } from "../utils/authStorage";
 
 const PrivateRoute = ({ children, roles }: any) => {
+
+  console.log("Checking authentication...");
   if (!isAuthenticated()) {
     return <Navigate to="/login" />;
   }
