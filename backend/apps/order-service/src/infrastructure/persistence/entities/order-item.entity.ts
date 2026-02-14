@@ -26,8 +26,8 @@ export class OrderItemEntity {
   @Column({ name: 'unit_price', type: 'decimal', precision: 10, scale: 2 })
   unitPrice: number;
 
-  // ⚠️ ELIMINAR COMPLETAMENTE - NI SIQUIERA COMENTADO
-  // subtotal?: number;  ← ❌ BORRAR ESTA LÍNEA
+  @Column({ name: 'subtotal', type: 'decimal', precision: 10, scale: 2 })
+  subtotal: number;
 
   @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

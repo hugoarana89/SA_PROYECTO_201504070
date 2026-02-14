@@ -68,6 +68,7 @@ export class TypeOrmOrderRepository implements OrderRepository {
       productName: item.productName,
       quantity: item.quantity,
       unitPrice: item.unitPrice.value,
+      subtotal: item.subtotal.value,
       createdAt: item.createdAt || new Date(),
     }));
 

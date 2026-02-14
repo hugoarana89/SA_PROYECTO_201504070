@@ -109,7 +109,7 @@ CREATE TABLE order_items (
     product_name VARCHAR(150) NOT NULL,
     quantity INT NOT NULL,
     unit_price DECIMAL(10,2) NOT NULL,
-    subtotal DECIMAL(10,2) GENERATED ALWAYS AS (quantity * unit_price) STORED,
+    subtotal DECIMAL(10,2) NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     

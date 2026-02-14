@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { restaurantService } from '../../services/restaurant.service';
 import type { Restaurant, CreateRestaurantDto } from '../../types/restaurant.types';
-import { getUser } from '../../utils/authStorage';
 import Spinner from '../../components/Spinner';
 
 const AdminRestaurants: React.FC = () => {
@@ -21,8 +20,6 @@ const AdminRestaurants: React.FC = () => {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [showInactive, setShowInactive] = useState(false);
-  const user = getUser();
-
   useEffect(() => {
     loadRestaurants();
   }, [searchTerm, showInactive]);
@@ -106,8 +103,6 @@ const AdminRestaurants: React.FC = () => {
     });
     setShowModal(true);
   };
-
-  const defaultImage = 'https://placehold.jp/24/3d4070/ffffff/400x200.png?text=Restaurante';
 
   return (
     <div className="min-h-screen bg-gray-50">

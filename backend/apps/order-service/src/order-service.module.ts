@@ -40,7 +40,7 @@ import { RESTAURANT_CATALOG_CLIENT } from './domain/ports/restaurant-catalog.cli
           protoPath: process.env.NODE_ENV === 'production' 
             ? join(__dirname, '../../proto/restaurant_catalog.proto')
             : join(process.cwd(), 'proto/restaurant_catalog.proto'),
-          url: process.env.RESTAURANT_CATALOG_SERVICE_URL || '0.0.0.0:50052',
+          url: process.env.RESTAURANT_SERVICE_URL || '0.0.0.0:50052',
           loader: {
             keepCase: true,
             longs: String,
