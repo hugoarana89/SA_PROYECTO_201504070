@@ -121,6 +121,9 @@ export const menuService = {
       body: JSON.stringify(data),
     });
 
+    console.log('Response from updateMenuItem:', `${API_URL}/restaurants/menu-items/${id}`);
+    console.log('Response status:', data);
+
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || 'Error al actualizar item de menú');
@@ -145,7 +148,6 @@ export const menuService = {
   // Obtener menú completo del restaurante (público)
   async getRestaurantMenu(restaurantId: string): Promise<MenuResponse> {
     const response = await fetch(`${API_URL}/restaurants/${restaurantId}/menu`);
-
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || 'Error al obtener menú');
@@ -161,7 +163,6 @@ export const menuService = {
     limit?: number;
   }): Promise<MenuResponse> {
     const queryParams = new URLSearchParams();
-    
     if (params?.onlyAvailable !== undefined) queryParams.append('onlyAvailable', params.onlyAvailable.toString());
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());

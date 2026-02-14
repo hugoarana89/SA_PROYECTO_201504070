@@ -456,7 +456,7 @@ Content-Type: application/json
 
 ### 7. **Actualizar Item de Menú** (RESTAURANTE/ADMINISTRADOR)
 ```
-PUT http://localhost:4000/restaurants/menu-items/:id_menu
+PUT http://localhost:4000/restaurants/:restaurantId/menu-items/:id
 Authorization: Bearer <token_restaurante_o_admin>
 Content-Type: application/json
 ```

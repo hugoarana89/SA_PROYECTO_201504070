@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import { restaurantService, menuService } from '../../services/restaurant.service';
 import type { Restaurant, MenuItem, CreateMenuItemDto } from '../../types/restaurant.types';
-import { getUser } from '../../utils/authStorage';
 import Spinner from '../../components/Spinner';
 
 const ManageMenu: React.FC = () => {
@@ -21,10 +20,8 @@ const ManageMenu: React.FC = () => {
     image_url: '',
     is_available: true,
   });
-  const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
+  const [showOnlyAvailable, setShowOnlyAvailable] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-
-  const user = getUser();
 
   // Cargar restaurantes al iniciar
   useEffect(() => {
@@ -158,11 +155,7 @@ const ManageMenu: React.FC = () => {
     setSelectedRestaurantId(e.target.value);
   };
 
-  const filteredRestaurants = restaurants.filter(restaurant =>
-    restaurant.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const defaultImage = 'https://placehold.jp/24/3d4070/ffffff/400x200.png?text=Restaurante';
+  const defaultImage = 'https://placehold.jp/24/3d4070/ffffff/400x200.png?text=Platillo';
   const selectedRestaurant = restaurants.find(r => r.id === selectedRestaurantId);
 
   return (
@@ -285,16 +278,6 @@ const ManageMenu: React.FC = () => {
         ) : menuItems.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow">
             <p className="text-gray-500">No hay items en el menú de este restaurante</p>
-            <button
-              onClick={() => {
-                resetForm();
-                setShowModal(true);
-              }}
-              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-            >
-              <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-              Agregar primer platillo
-            </button>
           </div>
         ) : (
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
