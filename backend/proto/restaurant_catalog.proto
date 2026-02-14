@@ -1,0 +1,200 @@
+syntax = "proto3";
+
+package restaurant_catalog;
+
+service RestaurantCatalogService {
+  // Métodos para validación de órdenes
+  rpc ValidateOrderItems (ValidateOrderItemsRequest) returns (ValidateOrderItemsResponse);
+  rpc GetRestaurantMenu (GetRestaurantMenuRequest) returns (GetRestaurantMenuResponse);
+  rpc GetRestaurant (GetRestaurantRequest) returns (RestaurantResponse);
+  
+  // Métodos CRUD para administración
+  rpc CreateRestaurant (CreateRestaurantRequest) returns (RestaurantResponse);
+  rpc UpdateRestaurant (UpdateRestaurantRequest) returns (RestaurantResponse);
+  rpc DeleteRestaurant (DeleteRestaurantRequest) returns (Empty);
+  rpc ListRestaurants (ListRestaurantsRequest) returns (ListRestaurantsResponse);
+  
+  // Métodos CRUD para items del menú
+  rpc CreateMenuItem (CreateMenuItemRequest) returns (MenuItemResponse);
+  rpc UpdateMenuItem (UpdateMenuItemRequest) returns (MenuItemResponse);
+  rpc DeleteMenuItem (DeleteMenuItemRequest) returns (Empty);
+  rpc ListMenuItems (ListMenuItemsRequest) returns (ListMenuItemsResponse);
+}
+
+/* ======================
+   REQUESTS DE VALIDACIÓN
+   ====================== */
+message ValidateOrderItemsRequest {
+  string restaurant_id = 1;
+  repeated OrderItemValidation items = 2;
+}
+
+message OrderItemValidation {
+  string menu_item_id = 1;
+  int32 quantity = 2;
+  double price = 3;
+}
+
+/* ======================
+   RESPONSES DE VALIDACIÓN
+   ====================== */
+message ValidateOrderItemsResponse {
+  bool valid = 1;
+  repeated ValidationError errors = 2;
+  repeated ValidatedItem validated_items = 3;
+  double total_amount = 4;
+}
+
+message ValidationError {
+  string code = 1;
+  string message = 2;
+  string menu_item_id = 3;
+}
+
+message ValidatedItem {
+  string menu_item_id = 1;
+  string name = 2;
+  double current_price = 3;
+  bool is_available = 4;
+  int32 requested_quantity = 5;
+  double subtotal = 6;
+}
+
+/* ======================
+   REQUESTS DE RESTAURANTES
+   ====================== */
+message CreateRestaurantRequest {
+  string owner_id = 1;
+  string name = 2;
+  string description = 3;
+  string address = 4;
+  string phone = 5;
+  string opening_time = 6;
+  string closing_time = 7;
+}
+
+message UpdateRestaurantRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string address = 4;
+  string phone = 5;
+  string opening_time = 6;
+  string closing_time = 7;
+  bool is_active = 8;
+}
+
+message DeleteRestaurantRequest {
+  string id = 1;
+  string owner_id = 2;
+}
+
+message GetRestaurantRequest {
+  string id = 1;
+}
+
+/* ======================
+   NUEVO: REQUEST Y RESPONSE PARA GetRestaurantMenu
+   ====================== */
+message GetRestaurantMenuRequest {
+  string restaurant_id = 1;
+  bool only_available = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+message GetRestaurantMenuResponse {
+  repeated MenuItemResponse items = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+message ListRestaurantsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  bool is_active = 3;
+  string search = 4;
+}
+
+/* ======================
+   REQUESTS DE MENÚ
+   ====================== */
+message CreateMenuItemRequest {
+  string restaurant_id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string image_url = 5;
+  bool is_available = 6;
+}
+
+message UpdateMenuItemRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string image_url = 5;
+  bool is_available = 6;
+  string restaurant_id = 7;
+}
+
+message DeleteMenuItemRequest {
+  string id = 1;
+  string restaurant_id = 2;
+}
+
+message ListMenuItemsRequest {
+  string restaurant_id = 1;
+  bool only_available = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+/* ======================
+   RESPONSES
+   ====================== */
+message RestaurantResponse {
+  string id = 1;
+  string owner_id = 2;
+  string name = 3;
+  string description = 4;
+  string address = 5;
+  string phone = 6;
+  string opening_time = 7;
+  string closing_time = 8;
+  bool is_active = 9;
+  string created_at = 10;
+  string updated_at = 11;
+}
+
+message MenuItemResponse {
+  string id = 1;
+  string restaurant_id = 2;
+  string name = 3;
+  string description = 4;
+  double price = 5;
+  string image_url = 6;
+  bool is_available = 7;
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+message ListRestaurantsResponse {
+  repeated RestaurantResponse restaurants = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+message ListMenuItemsResponse {
+  repeated MenuItemResponse items = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+/* ======================
+   EMPTY
+   ====================== */
+message Empty {}
