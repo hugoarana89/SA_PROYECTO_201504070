@@ -4,7 +4,7 @@ import { restaurantService, menuService } from '../../services/restaurant.servic
 import type { Restaurant, MenuItem, CreateMenuItemDto } from '../../types/restaurant.types';
 import Spinner from '../../components/Spinner';
 
-const ManageMenu: React.FC = () => {
+const AdminResMenus: React.FC = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<string>('');
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -40,18 +40,20 @@ const ManageMenu: React.FC = () => {
   const loadRestaurants = async () => {
     try {
       setLoading(true);
-
-      const data = await restaurantService.getRestaurantsByOwner();
-
+      const data = await restaurantService.getRestaurants({
+        onlyActive: true,
+        limit: 100, // Cargar suficientes restaurantes
+      });
       setRestaurants(data.restaurants);
-
+      
+      // Si hay restaurantes, seleccionar el primero por defecto
       if (data.restaurants.length > 0) {
         setSelectedRestaurantId(data.restaurants[0].id);
       }
-
+      
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cargar restaurantes");
+      setError(err instanceof Error ? err.message : 'Error al cargar restaurantes');
     } finally {
       setLoading(false);
     }
@@ -59,7 +61,7 @@ const ManageMenu: React.FC = () => {
 
   const loadMenuItems = async () => {
     if (!selectedRestaurantId) return;
-
+    
     try {
       setLoadingMenu(true);
       const data = await menuService.getMenuItems(selectedRestaurantId, {
@@ -77,12 +79,12 @@ const ManageMenu: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (!selectedRestaurantId) {
       setError('Debes seleccionar un restaurante');
       return;
     }
-
+    
     try {
       if (editingItem) {
         await menuService.updateMenuItem(editingItem.id, {
@@ -103,7 +105,7 @@ const ManageMenu: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!selectedRestaurantId) return;
     if (!window.confirm('¿Estás seguro de eliminar este item del menú?')) return;
-
+    
     try {
       await menuService.deleteMenuItem(id, selectedRestaurantId);
       loadMenuItems();
@@ -114,7 +116,7 @@ const ManageMenu: React.FC = () => {
 
   const handleToggleAvailable = async (item: MenuItem) => {
     if (!selectedRestaurantId) return;
-
+    
     try {
       await menuService.updateMenuItem(item.id, {
         is_available: !item.is_available,
@@ -195,7 +197,7 @@ const ManageMenu: React.FC = () => {
                 </select>
               </div>
             </div>
-
+            
             <div>
               <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
                 Buscar restaurante
@@ -321,10 +323,11 @@ const ManageMenu: React.FC = () => {
                       <div className="mt-2 flex items-center space-x-4">
                         <button
                           onClick={() => handleToggleAvailable(item)}
-                          className={`inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md ${item.is_available
+                          className={`inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md ${
+                            item.is_available
                               ? 'text-red-700 bg-red-100 hover:bg-red-200'
                               : 'text-green-700 bg-green-100 hover:bg-green-200'
-                            }`}
+                          }`}
                         >
                           {item.is_available ? 'Marcar no disponible' : 'Marcar disponible'}
                         </button>
@@ -347,14 +350,14 @@ const ManageMenu: React.FC = () => {
           <div className="fixed z-10 inset-0 overflow-y-auto">
             <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
               <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowModal(false)} />
-
+              
               <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <form onSubmit={handleSubmit}>
                   <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                       {editingItem ? 'Editar Platillo' : 'Nuevo Platillo'}
                     </h3>
-
+                    
                     {selectedRestaurant && (
                       <div className="mb-4 p-3 bg-gray-50 rounded-md">
                         <p className="text-sm text-gray-600">
@@ -362,7 +365,7 @@ const ManageMenu: React.FC = () => {
                         </p>
                       </div>
                     )}
-
+                    
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Nombre *</label>
@@ -370,7 +373,7 @@ const ManageMenu: React.FC = () => {
                           type="text"
                           required
                           value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          onChange={(e) => setFormData({...formData, name: e.target.value})}
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         />
                       </div>
@@ -379,7 +382,7 @@ const ManageMenu: React.FC = () => {
                         <label className="block text-sm font-medium text-gray-700">Descripción</label>
                         <textarea
                           value={formData.description}
-                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                          onChange={(e) => setFormData({...formData, description: e.target.value})}
                           rows={3}
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         />
@@ -393,7 +396,7 @@ const ManageMenu: React.FC = () => {
                           min="0"
                           step="0.01"
                           value={formData.price}
-                          onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+                          onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value)})}
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         />
                       </div>
@@ -405,15 +408,15 @@ const ManageMenu: React.FC = () => {
                         <input
                           type="url"
                           value={formData.image_url}
-                          onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                          onChange={(e) => setFormData({...formData, image_url: e.target.value})}
                           placeholder="https://ejemplo.com/imagen.jpg"
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         />
                         {formData.image_url && (
                           <div className="mt-2">
-                            <img
-                              src={formData.image_url}
-                              alt="Vista previa"
+                            <img 
+                              src={formData.image_url} 
+                              alt="Vista previa" 
                               className="h-20 w-20 object-cover rounded-md"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).src = defaultImage;
@@ -428,7 +431,7 @@ const ManageMenu: React.FC = () => {
                           type="checkbox"
                           id="is_available"
                           checked={formData.is_available}
-                          onChange={(e) => setFormData({ ...formData, is_available: e.target.checked })}
+                          onChange={(e) => setFormData({...formData, is_available: e.target.checked})}
                           className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                         />
                         <label htmlFor="is_available" className="ml-2 block text-sm text-gray-900">
@@ -466,4 +469,4 @@ const ManageMenu: React.FC = () => {
   );
 };
 
-export default ManageMenu;
+export default AdminResMenus;

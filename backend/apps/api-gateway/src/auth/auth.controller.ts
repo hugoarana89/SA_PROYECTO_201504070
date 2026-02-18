@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Get, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -52,5 +52,28 @@ export class AuthController {
   @Post('register/admin')
   registerAdmin(@Body() body: { email: string; password: string; role: Role }) {
     return this.authService.register(body.email, body.password, body.role);
+  }
+
+  /**
+   * Get /auth/users - Obtener todos los usuarios (solo accesible por administradores)
+   * Usa guards para proteger el endpoint
+   */
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMINISTRADOR)
+  @Get('users')
+  getAllUsers() {
+    return this.authService.getAllUsers();
+  }
+
+  /**
+   * Get /auth/users/role - Obtener usuarios por rol (solo accesible por administradores)
+   * Usa guards para proteger el endpoint
+   * Recibe el rol como query parameter, por ejemplo: /auth/users/role?role=CLIENTE
+   */
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMINISTRADOR)
+  @Post('users/role')
+  getUsersByRole(@Body() body: { role: Role }) {
+    return this.authService.findByRole(body.role);
   }
 }

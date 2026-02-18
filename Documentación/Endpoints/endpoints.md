@@ -203,13 +203,96 @@ Content-Type: application/json
 ```
 ---
 
+## 📌 **ENDPOINTS DE USUARIOS**
+
+### 1. **Obtener Usuarios** (solo ADMINISTRADORES)
+
+```
+GET http://localhost:4000/auth/users/
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "users": [
+    {
+      "id": "06e903ab-8570-4b89-814d-46377fb247cf",
+      "email": "admin@admin.com",
+      "role": "ADMINISTRADOR"
+    },
+    {
+      "id": "2b3175cf-fcd6-4975-a967-3604ef21ece3",
+      "email": "correo@corre.com",
+      "role": "CLIENTE"
+    }
+  ]
+}
+```
+### **Respuesta con errores:**
+
+```json
+{
+  "message": "Unauthorized",
+  "statusCode": 401
+}
+```
+
+### 2. **Obtener usuarios por Rol** (solo ADMINISTRADORES)
+
+```
+POST http://localhost:4000/auth/users/role
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+```
+
+### **Json a enviar:**
+
+```json
+{
+  "role": "ADMINISTRADOR"
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "users": [
+    {
+      "id": "06e903ab-8570-4b89-814d-46377fb247cf",
+      "email": "admin@admin.com",
+      "role": "ADMINISTRADOR"
+    },
+    {
+      "id": "d55d6ea8-20aa-4e07-a32a-b8499baf1a1b",
+      "email": "administrador2@admin.com",
+      "role": "ADMINISTRADOR"
+    }
+  ]
+}
+```
+### **Respuesta con errores:**
+
+```json
+{
+  "message": "Unauthorized",
+  "statusCode": 401
+}
+```
+
 # 👉 **RESTAURANT SERVICE**
 
 ## 📌 **ENDPOINTS DE RESTAURANT**
 
 ### 1. **Crear Restaurante** (Solo ADMINISTRADOR)
+
+**ownerId:** será el usuario de tipo restaurante al que se le asignará el restaurante creado.
+
 ```
-POST http://localhost:4000/restaurants
+POST http://localhost:4000/restaurants/:ownerId
 Authorization: Bearer <token_admin>
 Content-Type: application/json
 ```
@@ -404,6 +487,61 @@ GET http://localhost:4000/restaurants?page=1&limit=10&onlyActive=true&search=abu
 {
   "statusCode": 500,
   "message": "Internal server error: Validation failed: page must not be less than 1"
+}
+```
+
+---
+
+### 6. **Listar restaurantes de un usuario** (solo RESTAURANTE)
+
+```
+GET http://localhost:4000/restaurants/owner/
+Authorization: Bearer <token_restaurant>
+```
+### **Respuesta exitosa:**
+```json
+{
+  "restaurants": [
+    {
+      "id": "f73b859e-0ca1-11f1-b290-002b6738278b",
+      "owner_id": "b49929cc-9db8-463a-81be-15d95713eb68",
+      "name": "Green Garden",
+      "description": "Comida saludable, ensaladas orgánicas y bowls.",
+      "address": "Via 5 4-12 Zona 4, Ciudad de Guatemala, Guatemala, Guatemala",
+      "phone": "+502 5555-0105",
+      "opening_time": "07:30",
+      "closing_time": "18:00",
+      "is_active": true,
+      "created_at": "2026-02-18T08:15:20.000Z",
+      "updated_at": "2026-02-18T08:15:20.000Z"
+    },
+    {
+      "id": "f73b8a9d-0ca1-11f1-b290-002b6738278b",
+      "owner_id": "b49929cc-9db8-463a-81be-15d95713eb68",
+      "name": "Burger Master",
+      "description": "Las mejores hamburguesas artesanales de la ciudad.",
+      "address": "Calle del Arco #22, Antigua Guatemala, Sacatepéquez, Guatemala",
+      "phone": "+502 5555-0106",
+      "opening_time": "10:00",
+      "closing_time": "22:00",
+      "is_active": true,
+      "created_at": "2026-02-18T08:15:20.000Z",
+      "updated_at": "2026-02-18T08:15:20.000Z"
+    },
+    {
+      "id": "f73b96fd-0ca1-11f1-b290-002b6738278b",
+      "owner_id": "b49929cc-9db8-463a-81be-15d95713eb68",
+      "name": "Café & Aroma",
+      "description": "Café de especialidad y repostería fina.",
+      "address": "6ta Avenida Norte 5-55, Antigua Guatemala, Sacatepéquez, Guatemala",
+      "phone": "+502 5555-0107",
+      "opening_time": "07:00",
+      "closing_time": "19:00",
+      "is_active": true,
+      "created_at": "2026-02-18T08:15:20.000Z",
+      "updated_at": "2026-02-18T08:15:20.000Z"
+    }
+  ]
 }
 ```
 

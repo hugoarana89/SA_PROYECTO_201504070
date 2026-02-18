@@ -8,6 +8,7 @@ import { UpdateRestaurantUseCase } from '../../../application/usecases/restauran
 import { DeleteRestaurantUseCase } from '../../../application/usecases/restaurant/delete-restaurant.usecase';
 import { GetRestaurantUseCase } from '../../../application/usecases/restaurant/get-restaurant.usecase';
 import { ListRestaurantsUseCase } from '../../../application/usecases/restaurant/list-restaurants.usecase';
+import { ListRestaurantsByOwnerUseCase } from '../../../application/usecases/restaurant/list-restaurant-by-owner.usecase';
 import { CreateMenuItemUseCase } from '../../../application/usecases/menu/create-menu-item.usecase';
 import { UpdateMenuItemUseCase } from '../../../application/usecases/menu/update-menu-item.usecase';
 import { DeleteMenuItemUseCase } from '../../../application/usecases/menu/delete-menu-item.usecase';
@@ -15,13 +16,14 @@ import { ListMenuItemsUseCase } from '../../../application/usecases/menu/list-me
 import { ValidateOrderItemsUseCase } from '../../../application/usecases/validation/validate-order-items.usecase';
 
 // DTOs
-import { 
-  CreateRestaurantDto, 
-  UpdateRestaurantDto, 
+import {
+  CreateRestaurantDto,
+  UpdateRestaurantDto,
   DeleteRestaurantDto,
   GetRestaurantDto,
   ListRestaurantsDto,
-  GetRestaurantMenuRequestDto  // ← NUEVO DTO
+  GetRestaurantMenuRequestDto,
+  ListRestaurantsByOwnerDto
 } from '../dto/restaurant.dto';
 import {
   CreateMenuItemDto,
@@ -48,64 +50,64 @@ export class RestaurantCatalogGrpcController {
     private readonly deleteRestaurantUseCase: DeleteRestaurantUseCase,
     private readonly getRestaurantUseCase: GetRestaurantUseCase,
     private readonly listRestaurantsUseCase: ListRestaurantsUseCase,
-    
+    private readonly listRestaurantsByOwnerUseCase: ListRestaurantsByOwnerUseCase,
     // Menu Use Cases
     private readonly createMenuItemUseCase: CreateMenuItemUseCase,
     private readonly updateMenuItemUseCase: UpdateMenuItemUseCase,
     private readonly deleteMenuItemUseCase: DeleteMenuItemUseCase,
     private readonly listMenuItemsUseCase: ListMenuItemsUseCase,
-    
+
     // Validation Use Cases
     private readonly validateOrderItemsUseCase: ValidateOrderItemsUseCase,
-  ) {}
+  ) { }
 
   /* ======================
      MÉTODOS DE VALIDACIÓN
      ====================== */
- @GrpcValidate(ValidateOrderItemsRequestDto, 'ValidateOrderItems')
-async validateOrderItems(@Payload() data: ValidateOrderItemsRequestDto) {
-  this.logger.log(`📥 Recibida petición de validación para restaurante: ${data.restaurant_id}`);
-  this.logger.debug(`Items a validar: ${JSON.stringify(data.items)}`);
-  
-  try {
-    const result = await this.validateOrderItemsUseCase.execute(
-      data.restaurant_id,
-      data.items.map(item => ({
-        menuItemId: item.menu_item_id,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-    );
+  @GrpcValidate(ValidateOrderItemsRequestDto, 'ValidateOrderItems')
+  async validateOrderItems(@Payload() data: ValidateOrderItemsRequestDto) {
+    this.logger.log(`📥 Recibida petición de validación para restaurante: ${data.restaurant_id}`);
+    this.logger.debug(`Items a validar: ${JSON.stringify(data.items)}`);
 
-    this.logger.log(`✅ Validación completada. Válido: ${result.valid}`);
-    
-    // ✅ CONSTRUIR LA RESPUESTA EXPLÍCITAMENTE
-    const response = {
-      valid: result.valid,
-      errors: result.errors.map(error => ({
-        code: error.code,
-        message: error.message,
-        menu_item_id: error.menuItemId,
-      })),
-      validated_items: result.validatedItems.map(item => ({
-        menu_item_id: item.menuItemId,
-        name: item.name,
-        current_price: item.currentPrice,
-        is_available: item.isAvailable,
-        requested_quantity: item.requestedQuantity,
-        subtotal: item.subtotal,
-      })),
-      total_amount: result.totalAmount,
-    };
+    try {
+      const result = await this.validateOrderItemsUseCase.execute(
+        data.restaurant_id,
+        data.items.map(item => ({
+          menuItemId: item.menu_item_id,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      );
 
-    this.logger.debug(`📤 Respuesta: ${JSON.stringify(response)}`);
-    return response;
-    
-  } catch (error) {
-    this.logger.error(`❌ Error en validación: ${error.message}`);
-    throw error;
+      this.logger.log(`✅ Validación completada. Válido: ${result.valid}`);
+
+      // ✅ CONSTRUIR LA RESPUESTA EXPLÍCITAMENTE
+      const response = {
+        valid: result.valid,
+        errors: result.errors.map(error => ({
+          code: error.code,
+          message: error.message,
+          menu_item_id: error.menuItemId,
+        })),
+        validated_items: result.validatedItems.map(item => ({
+          menu_item_id: item.menuItemId,
+          name: item.name,
+          current_price: item.currentPrice,
+          is_available: item.isAvailable,
+          requested_quantity: item.requestedQuantity,
+          subtotal: item.subtotal,
+        })),
+        total_amount: result.totalAmount,
+      };
+
+      this.logger.debug(`📤 Respuesta: ${JSON.stringify(response)}`);
+      return response;
+
+    } catch (error) {
+      this.logger.error(`❌ Error en validación: ${error.message}`);
+      throw error;
+    }
   }
-}
 
   /* ======================
      MÉTODOS DE RESTAURANTES
@@ -174,9 +176,16 @@ async validateOrderItems(@Payload() data: ValidateOrderItemsRequestDto) {
     };
   }
 
-  /* ======================
-     MÉTODO CORREGIDO: GetRestaurantMenu
-     ====================== */
+  // NUEVO MÉTODO PARA LISTAR RESTAURANTES POR PROPIETARIO----------------------------------------------------
+  @GrpcValidate(ListRestaurantsByOwnerDto, 'ListRestaurantsByOwner')
+  async listRestaurantsByOwner(@Payload() data: ListRestaurantsByOwnerDto) {
+    const result = await this.listRestaurantsByOwnerUseCase.execute(data.owner_id);
+    
+    return {
+      restaurants: result.map(item => this.mapRestaurantToResponse(item)),
+    };
+  }
+
   @GrpcValidate(GetRestaurantMenuRequestDto, 'GetRestaurantMenu')
   async getRestaurantMenu(@Payload() data: GetRestaurantMenuRequestDto) {
     const result = await this.listMenuItemsUseCase.execute({

@@ -47,6 +47,16 @@ export class UsersService {
     return this.refreshTokenRepo.save(refreshToken);
   }
 
+  // Devolver todos los usuarios registrados
+  async findAll() {
+    return this.userRepo.find();
+  }
+
+  // Devolver solo usuario con un Role específico
+  async findByRole(role: string) {
+    return this.userRepo.find({ where: { role: role as any } });
+  }
+
   
   //Trae SOLO tokens válidos (no expirados y no revocados)
   async findActiveRefreshTokens() {

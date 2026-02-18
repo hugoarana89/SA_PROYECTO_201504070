@@ -84,6 +84,17 @@ export class RestaurantService implements OnModuleInit {
     }
   }
 
+  // Listar restaurantes de un propietario
+  async listRestaurantsByOwner(ownerId: string) {
+    try {
+      return await lastValueFrom(
+        this.restaurantGrpc.ListRestaurantsByOwner({ owner_id: ownerId }),
+      );
+    } catch (error) {
+      this.handleGrpcError(error);
+    }
+  }
+
   // Menú
   async createMenuItem(data: any) {
     try {

@@ -79,17 +79,15 @@ USE order_db;
 -- Tabla de ordenes
 CREATE TABLE orders (
     id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    client_user_id BIGINT NOT NULL,
-    restaurant_id BIGINT NOT NULL,
+    client_user_id VARCHAR(36) NOT NULL,
+    restaurant_id VARCHAR(36) NOT NULL,
     status ENUM(
         'CREADA',
         'CANCELADA',
         'EN_PROCESO',
         'FINALIZADA',
         'RECHAZADA',
-        'LISTA',
-        'EN_CAMINO',
-        'ENTREGADA'
+        'LISTA'
     ) NOT NULL DEFAULT 'CREADA',
     total_amount DECIMAL(10,2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -105,7 +103,7 @@ CREATE TABLE orders (
 CREATE TABLE order_items (
     id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
     order_id VARCHAR(36) NOT NULL,
-    menu_item_id BIGINT NOT NULL,
+    menu_item_id VARCHAR(36) NOT NULL,
     product_name VARCHAR(150) NOT NULL,
     quantity INT NOT NULL,
     unit_price DECIMAL(10,2) NOT NULL,

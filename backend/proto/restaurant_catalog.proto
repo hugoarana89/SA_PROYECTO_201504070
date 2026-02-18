@@ -13,6 +13,7 @@ service RestaurantCatalogService {
   rpc UpdateRestaurant (UpdateRestaurantRequest) returns (RestaurantResponse);
   rpc DeleteRestaurant (DeleteRestaurantRequest) returns (Empty);
   rpc ListRestaurants (ListRestaurantsRequest) returns (ListRestaurantsResponse);
+  rpc ListRestaurantsByOwner (ListRestaurantsByOwnerRequest) returns (ListRestaurantsByOwnerResponse);
   
   // Métodos CRUD para items del menú
   rpc CreateMenuItem (CreateMenuItemRequest) returns (MenuItemResponse);
@@ -91,6 +92,10 @@ message DeleteRestaurantRequest {
 
 message GetRestaurantRequest {
   string id = 1;
+}
+
+message ListRestaurantsByOwnerRequest {
+  string owner_id = 1;
 }
 
 /* ======================
@@ -186,6 +191,10 @@ message ListRestaurantsResponse {
   int32 page = 3;
   int32 limit = 4;
 }
+
+message ListRestaurantsByOwnerResponse {
+  repeated RestaurantResponse restaurants = 1;
+} 
 
 message ListMenuItemsResponse {
   repeated MenuItemResponse items = 1;
