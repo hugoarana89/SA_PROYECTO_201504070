@@ -12,10 +12,11 @@ import Spinner from '../../components/Spinner';
 
 const statusColors: Record<OrderStatus, { bg: string; text: string; icon: any }> = {
   'CREADA': { bg: 'bg-blue-100', text: 'text-blue-800', icon: ClockIcon },
-  'EN_PROCESO': { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: ArrowPathIcon },
-  'FINALIZADA': { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircleIcon },
   'CANCELADA': { bg: 'bg-gray-100', text: 'text-gray-800', icon: XCircleIcon },
   'RECHAZADA': { bg: 'bg-red-100', text: 'text-red-800', icon: XCircleIcon },
+  'EN_PROCESO': { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: ArrowPathIcon },
+  'LISTA': { bg: 'bg-orange-100', text: 'text-orange-800', icon: CheckCircleIcon },
+  'FINALIZADA': { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircleIcon }
 };
 
 const statusLabels: Record<OrderStatus, string> = {
@@ -24,6 +25,7 @@ const statusLabels: Record<OrderStatus, string> = {
   'FINALIZADA': 'Finalizada',
   'CANCELADA': 'Cancelada',
   'RECHAZADA': 'Rechazada',
+  'LISTA': 'Lista',
 };
 
 const IncomingOrders: React.FC = () => {
@@ -164,6 +166,7 @@ const IncomingOrders: React.FC = () => {
             <option value="TODAS">Todas las órdenes</option>
             <option value="CREADA">Creadas</option>
             <option value="EN_PROCESO">En proceso</option>
+            <option value="LISTA">Listas</option>
             <option value="FINALIZADA">Finalizadas</option>
             <option value="RECHAZADA">Rechazadas</option>
             <option value="CANCELADA">Canceladas</option>

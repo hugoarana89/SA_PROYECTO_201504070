@@ -78,7 +78,7 @@ export const restaurantService = {
 
   // Obtener restaurante por ID (público)
   async getRestaurantById(id: string): Promise<Restaurant> {
-    const response = await fetch(`${API_URL}/restaurants/${id}`);
+    const response = await fetch(`${API_URL}/restaurants/unique/${id}`);
 
     if (!response.ok) {
       const error = await response.json();

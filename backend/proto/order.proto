@@ -5,8 +5,9 @@ package order;
 service OrderService {
   rpc CreateOrder (CreateOrderRequest) returns (OrderResponse);
   rpc CancelOrder (CancelOrderRequest) returns (OrderResponse);
-  rpc AcceptOrder (AcceptOrderRequest) returns (OrderResponse);
   rpc RejectOrder (RejectOrderRequest) returns (OrderResponse);
+  rpc AcceptOrder (AcceptOrderRequest) returns (OrderResponse);
+  rpc ReadyOrder (ReadyOrderRequest) returns (OrderResponse);
   rpc CompleteOrder (CompleteOrderRequest) returns (OrderResponse);
   rpc GetOrder (GetOrderRequest) returns (OrderResponse);
   rpc ListOrders (ListOrdersRequest) returns (ListOrdersResponse);
@@ -35,15 +36,20 @@ message CancelOrderRequest {
   string client_id = 2;
 }
 
+message RejectOrderRequest {
+  string order_id = 1;
+  string restaurant_id = 2;
+  string reason = 3;
+}
+
 message AcceptOrderRequest {
   string order_id = 1;
   string restaurant_id = 2;
 }
 
-message RejectOrderRequest {
+message ReadyOrderRequest {
   string order_id = 1;
   string restaurant_id = 2;
-  string reason = 3;
 }
 
 message CompleteOrderRequest {

@@ -9,10 +9,10 @@ CREATE TABLE notifications (
 	delivery_user_id VARCHAR(36) NOT NULL, -- Referencia al delivery en auth_db, 
     order_id VARCHAR(36),
     order_type ENUM(
-        'ORDER_CREATED',
-        'ORDER_CANCELLED',
-        'ORDER_SHIPPED',
-        'ORDER_REJECTED'
+        'CREADA',
+        'CANCELADA',
+        'EN_CAMINO',
+        'RECHAZADA',
     ) NOT NULL,
     content TEXT NOT NULL,
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -8,8 +8,9 @@ import { OrderGrpcController } from './infrastructure/grpc/controllers/order.grp
 // Use Cases
 import { CreateOrderUseCase } from './application/usecases/create-order.usecase';
 import { CancelOrderUseCase } from './application/usecases/cancel-order.usecase';
-import { AcceptOrderUseCase } from './application/usecases/accept-order.usecase';
 import { RejectOrderUseCase } from './application/usecases/reject-order.usecase';
+import { AcceptOrderUseCase } from './application/usecases/accept-order.usecase';
+import { ReadyOrderUseCase } from './application/usecases/ready-order.usecase';
 import { CompleteOrderUseCase } from './application/usecases/complete-order.usecase';
 import { GetOrderUseCase } from './application/usecases/get-order.usecase';
 import { ListOrdersUseCase } from './application/usecases/list-orders.usecase';
@@ -68,8 +69,9 @@ import { RESTAURANT_CATALOG_CLIENT } from './domain/ports/restaurant-catalog.cli
     // Use Cases
     CreateOrderUseCase,
     CancelOrderUseCase,
-    AcceptOrderUseCase,
     RejectOrderUseCase,
+    AcceptOrderUseCase,
+    ReadyOrderUseCase,
     CompleteOrderUseCase,
     GetOrderUseCase,
     ListOrdersUseCase,

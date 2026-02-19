@@ -100,7 +100,7 @@ export const orderService = {
 
   // Completar orden
   async completeOrder(orderId: string, restaurantId: string): Promise<Order> {
-    const response = await authFetch(`${API_URL}/orders/${orderId}/complete`, {
+    const response = await authFetch(`${API_URL}/orders/${orderId}/ready`, {
       method: 'PUT',
       body: JSON.stringify({ restaurant_id: restaurantId } as RestaurantActionDto),
     });
@@ -129,6 +129,8 @@ export const orderService = {
     if (params?.status) queryParams.append('status', params.status);
 
     const url = `${API_URL}/orders/restaurant/${restaurantId}${queryParams.toString() ? `?${queryParams}` : ''}`;
+
+    console.log('Fetching restaurant orders with URL:', url); // Debug log
     const response = await authFetch(url);
 
     if (!response.ok) {

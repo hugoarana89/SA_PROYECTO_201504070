@@ -25,16 +25,20 @@ export class OrderStatus {
     return new OrderStatus(OrderStatusEnum.CANCELLED);
   }
 
+  static get REJECTED(): OrderStatus {
+    return new OrderStatus(OrderStatusEnum.REJECTED);
+  }
+
   static get IN_PROGRESS(): OrderStatus {
     return new OrderStatus(OrderStatusEnum.IN_PROGRESS);
   }
 
-  static get COMPLETED(): OrderStatus {
-    return new OrderStatus(OrderStatusEnum.COMPLETED);
+  static get READY(): OrderStatus {
+    return new OrderStatus(OrderStatusEnum.READY);
   }
 
-  static get REJECTED(): OrderStatus {
-    return new OrderStatus(OrderStatusEnum.REJECTED);
+  static get COMPLETED(): OrderStatus {
+    return new OrderStatus(OrderStatusEnum.COMPLETED);
   }
 
   get value(): string {

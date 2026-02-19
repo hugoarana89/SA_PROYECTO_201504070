@@ -125,7 +125,6 @@ CREATE TABLE deliveries (
     order_id VARCHAR(36) NOT NULL, -- este es el id de la orden
     delivery_user_id VARCHAR(36) NOT NULL, -- Referencia al usuario repartidor en auth_db 
     status ENUM(
-        'ASIGNADA',
         'EN_CAMINO',
         'ENTREGADA',
         'CANCELADA'
@@ -144,6 +143,10 @@ CREATE TABLE deliveries (
 CREATE DATABASE IF NOT EXISTS notification_db;
 USE notification_db;
 
+-- Database: notification_db
+CREATE DATABASE IF NOT EXISTS notification_db;
+USE notification_db;
+
 -- Tabla de notificaciones
 CREATE TABLE notifications (
     id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
@@ -151,10 +154,10 @@ CREATE TABLE notifications (
 	delivery_user_id VARCHAR(36) NOT NULL, -- Referencia al delivery en auth_db, 
     order_id VARCHAR(36),
     order_type ENUM(
-        'ORDER_CREATED',
-        'ORDER_CANCELLED',
-        'ORDER_SHIPPED',
-        'ORDER_REJECTED'
+        'CREADA',
+        'CANCELADA',
+        'EN_CAMINO',
+        'RECHAZADA',
     ) NOT NULL,
     content TEXT NOT NULL,
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -165,4 +168,5 @@ CREATE TABLE notifications (
     INDEX idx_csent_at (sent_at),
 	INDEX idx_delivery_user_id (delivery_user_id)
 );
+
 

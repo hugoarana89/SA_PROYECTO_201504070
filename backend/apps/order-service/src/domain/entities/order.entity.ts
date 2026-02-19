@@ -34,7 +34,7 @@ export class Order {
     this._rejectionReason = rejectionReason;
     this._createdAt = createdAt;
     this._updatedAt = updatedAt;
-    
+
     this.validate();
   }
 
@@ -66,25 +66,12 @@ export class Order {
     if (clientId !== this._clientId) {
       throw new DomainException('Solo el cliente puede cancelar su propio pedido.');
     }
-    
+
     if (this._status.value !== OrderStatus.CREATED.value) {
       throw new DomainException(`No se puede cancelar una orden en estado ${this._status.value}`);
     }
-    
-    this._status = OrderStatus.CANCELLED;
-    this._updatedAt = new Date();
-  }
 
-  accept(restaurantId: string): void {
-    if (restaurantId !== this._restaurantId) {
-      throw new DomainException('Solo el restaurante puede aceptar sus pedidos');
-    }
-    
-    if (this._status.value !== OrderStatus.CREATED.value) {
-      throw new DomainException(`No se puede aceptar un pedido en estado ${this._status.value}`);
-    }
-    
-    this._status = OrderStatus.IN_PROGRESS;
+    this._status = OrderStatus.CANCELLED;
     this._updatedAt = new Date();
   }
 
@@ -92,13 +79,40 @@ export class Order {
     if (restaurantId !== this._restaurantId) {
       throw new DomainException('Solo el restaurante puede rechazar sus pedidos');
     }
-    
+
     if (this._status.value !== OrderStatus.CREATED.value) {
       throw new DomainException(`No se puede rechazar un pedido en estado ${this._status.value}`);
     }
-    
+
     this._status = OrderStatus.REJECTED;
     this._rejectionReason = reason || 'Sin razón especificada';
+    this._updatedAt = new Date();
+  }
+
+  accept(restaurantId: string): void {
+    if (restaurantId !== this._restaurantId) {
+      throw new DomainException('Solo el restaurante puede aceptar sus pedidos');
+    }
+
+    if (this._status.value !== OrderStatus.CREATED.value) {
+      throw new DomainException(`No se puede aceptar un pedido en estado ${this._status.value}`);
+    }
+
+    this._status = OrderStatus.IN_PROGRESS;
+    this._updatedAt = new Date();
+  }
+
+
+  ready(restaurantId: string): void {
+    if (restaurantId !== this._restaurantId) {
+      throw new DomainException('Solo el restaurante puede marcar sus pedidos como listos');
+    }
+
+    if (this._status.value !== OrderStatus.IN_PROGRESS.value) {
+      throw new DomainException(`No se puede marcar como listo un pedido en estado ${this._status.value}`);
+    }
+
+    this._status = OrderStatus.READY;
     this._updatedAt = new Date();
   }
 
@@ -106,11 +120,11 @@ export class Order {
     if (restaurantId !== this._restaurantId) {
       throw new DomainException('Solo el restaurante puede completar sus pedidos');
     }
-    
-    if (this._status.value !== OrderStatus.IN_PROGRESS.value) {
-      throw new DomainException(`No se puede completar un pedido en estado ${this._status.value}`);
+
+    if (this._status.value !== OrderStatus.READY.value) {
+      throw new DomainException(`No se puede finalizar un pedido en estado ${this._status.value}`);
     }
-    
+
     this._status = OrderStatus.COMPLETED;
     this._updatedAt = new Date();
   }

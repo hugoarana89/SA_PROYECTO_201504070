@@ -49,9 +49,10 @@ export class RestaurantController {
   }
 
   /**
-   * GET /restaurants/:id - Obtener un restaurante por ID
+   * GET /restaurants/unique/:id - Obtener un restaurante por ID
    */
-  @Get('all/:id')
+
+  @Get('unique/:id')
   async getRestaurant(@Param('id') id: string) {
     return this.restaurantService.getRestaurant(id);
   }
