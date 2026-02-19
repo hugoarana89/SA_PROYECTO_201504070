@@ -6,7 +6,7 @@
 
 import { Controller } from '@nestjs/common';
 import { Payload, RpcException } from '@nestjs/microservices';
-import { status }                from '@grpc/grpc-js';
+import { status } from '@grpc/grpc-js';
 
 import { GrpcValidate } from '../../infrastructure/grpc/decorator/grpc-validate.decorator';
 import {

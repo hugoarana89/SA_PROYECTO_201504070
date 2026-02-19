@@ -18,9 +18,13 @@ export class SendGridEmailSender implements EmailSender, OnModuleInit {
   private readonly fromEmail: string;
 
   constructor(private readonly configService: ConfigService) {
+
+    // Configura el email de origen desde las variables de entorno, con un valor por defecto.
+    const defaultFromEmail = this.configService.get<string>('SENDGRID_FROM_EMAIL', 'no-reply@tuapp.com');
+
     this.fromEmail = this.configService.get<string>(
       'SENDGRID_FROM_EMAIL',
-      'no-reply@tuapp.com',
+      defaultFromEmail,
     );
   }
 
