@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as orderRepositoryInterface from '../../domain/ports/order.repository.interface';
-import { DomainException, OrderNotFoundException } from '../../domain/exceptions/domain.exceptions';
+import { OrderNotFoundException } from '../../domain/exceptions/domain.exceptions';
 
 export interface AcceptOrderRequest {
   orderId: string;

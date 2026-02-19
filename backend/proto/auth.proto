@@ -8,6 +8,8 @@ service AuthService {
   rpc RefreshToken (RefreshTokenRequest) returns (AuthResponse);
   rpc Logout (LogoutRequest) returns (Empty);
   rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+  rpc GetAllUsers (Empty) returns (GetAllUsersResponse);
+  rpc FindByRole (FindByRoleRequest) returns (GetAllUsersResponse);
 }
 
 /* ======================
@@ -37,6 +39,10 @@ message ValidateTokenRequest {
   string token = 1;
 }
 
+message FindByRoleRequest {
+  string role = 1;
+}
+
 /* ======================
    RESPONSES
    ====================== */
@@ -57,6 +63,14 @@ message UserResponse {
   string id = 1;
   string email = 2;
   string role = 3;
+}
+
+message GetAllUsersResponse {
+  repeated UserResponse users = 1;
+}
+
+message FindByRoleResponse {
+  repeated UserResponse users = 1;
 }
 
 /* ======================

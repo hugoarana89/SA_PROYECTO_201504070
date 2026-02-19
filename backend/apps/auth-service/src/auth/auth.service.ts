@@ -164,4 +164,41 @@ export class AuthService {
       message: 'Refresh token inválido o expirado',
     });
   }
+
+  // Obtiene todos los usuarios (solo para administradores)
+  async getAllUsers() {
+    const users = await this.usersService.findAll();
+    if (!users) {
+      throw new RpcException({
+        code: status.INTERNAL,
+        message: 'Error al obtener usuarios',
+      });
+    }
+    return {
+      users: users.map((u) => ({
+        id: u.id,
+        email: u.email,
+        role: u.role,
+      })),
+    };
+  }
+
+  async findByRole(role: Role) {
+    const users = await this.usersService.findByRole(role);
+
+    if (!users) {
+      throw new RpcException({
+        code: status.INTERNAL,
+        message: 'Error al obtener usuarios por rol',
+      });
+    }
+
+    return {
+      users: users.map((u) => ({
+        id: u.id,
+        email: u.email,
+        role: u.role,
+      })),
+    };
+  }
 }

@@ -4,8 +4,9 @@ export interface OrderGrpcService {
   // Órdenes
   CreateOrder(data: CreateOrderRequest): Observable<OrderResponse>;
   CancelOrder(data: CancelOrderRequest): Observable<OrderResponse>;
-  AcceptOrder(data: AcceptOrderRequest): Observable<OrderResponse>;
   RejectOrder(data: RejectOrderRequest): Observable<OrderResponse>;
+  AcceptOrder(data: AcceptOrderRequest): Observable<OrderResponse>;
+  ReadyOrder(data: ReadyOrderRequest): Observable<OrderResponse>;
   CompleteOrder(data: CompleteOrderRequest): Observable<OrderResponse>;
   GetOrder(data: GetOrderRequest): Observable<OrderResponse>;
   ListOrders(data: ListOrdersRequest): Observable<ListOrdersResponse>;
@@ -32,15 +33,20 @@ export interface CancelOrderRequest {
   client_id: string;
 }
 
+export interface RejectOrderRequest {
+  order_id: string;
+  restaurant_id: string;
+  reason?: string;
+}
+
 export interface AcceptOrderRequest {
   order_id: string;
   restaurant_id: string;
 }
 
-export interface RejectOrderRequest {
+export interface ReadyOrderRequest {
   order_id: string;
   restaurant_id: string;
-  reason?: string;
 }
 
 export interface CompleteOrderRequest {

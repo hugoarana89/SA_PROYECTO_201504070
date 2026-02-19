@@ -1,8 +1,10 @@
 import { Controller } from '@nestjs/common';
-import { Payload } from '@nestjs/microservices';
+import { GrpcMethod, Payload } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { Role } from '../common/enums/role.enum';
+import { FindByRoleDto } from './dto/user.dto';
 import { GrpcValidate } from '../common/decorators/grpc-validate.decorator';
 import {
   ValidateTokenDto,
@@ -48,5 +50,17 @@ export class AuthGrpcController {
   @GrpcValidate(LogoutDto, 'Logout')
   logout(@Payload() data: LogoutDto) {
     return this.authService.logout(data.refreshToken);
+  }
+
+  // Obtener todos los usuarios (solo accesible por administradores)
+  @GrpcMethod('AuthService', 'GetAllUsers')
+  getAllUsers() {
+    return this.authService.getAllUsers();
+  }
+
+  // Obtener usuarios por rol (solo accesible por administradores)
+  @GrpcValidate(FindByRoleDto, 'FindByRole')
+  findByRole(@Payload() data: FindByRoleDto) {
+    return this.authService.findByRole(data.role as Role);
   }
 }

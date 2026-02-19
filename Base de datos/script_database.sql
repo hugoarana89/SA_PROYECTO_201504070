@@ -79,17 +79,15 @@ USE order_db;
 -- Tabla de ordenes
 CREATE TABLE orders (
     id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    client_user_id BIGINT NOT NULL,
-    restaurant_id BIGINT NOT NULL,
+    client_user_id VARCHAR(36) NOT NULL,
+    restaurant_id VARCHAR(36) NOT NULL,
     status ENUM(
         'CREADA',
         'CANCELADA',
         'EN_PROCESO',
         'FINALIZADA',
         'RECHAZADA',
-        'LISTA',
-        'EN_CAMINO',
-        'ENTREGADA'
+        'LISTA'
     ) NOT NULL DEFAULT 'CREADA',
     total_amount DECIMAL(10,2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -105,7 +103,7 @@ CREATE TABLE orders (
 CREATE TABLE order_items (
     id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
     order_id VARCHAR(36) NOT NULL,
-    menu_item_id BIGINT NOT NULL,
+    menu_item_id VARCHAR(36) NOT NULL,
     product_name VARCHAR(150) NOT NULL,
     quantity INT NOT NULL,
     unit_price DECIMAL(10,2) NOT NULL,
@@ -127,7 +125,6 @@ CREATE TABLE deliveries (
     order_id VARCHAR(36) NOT NULL, -- este es el id de la orden
     delivery_user_id VARCHAR(36) NOT NULL, -- Referencia al usuario repartidor en auth_db 
     status ENUM(
-        'ASIGNADA',
         'EN_CAMINO',
         'ENTREGADA',
         'CANCELADA'
@@ -146,6 +143,10 @@ CREATE TABLE deliveries (
 CREATE DATABASE IF NOT EXISTS notification_db;
 USE notification_db;
 
+-- Database: notification_db
+CREATE DATABASE IF NOT EXISTS notification_db;
+USE notification_db;
+
 -- Tabla de notificaciones
 CREATE TABLE notifications (
     id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
@@ -153,10 +154,10 @@ CREATE TABLE notifications (
 	delivery_user_id VARCHAR(36) NOT NULL, -- Referencia al delivery en auth_db, 
     order_id VARCHAR(36),
     order_type ENUM(
-        'ORDER_CREATED',
-        'ORDER_CANCELLED',
-        'ORDER_SHIPPED',
-        'ORDER_REJECTED'
+        'CREADA',
+        'CANCELADA',
+        'EN_CAMINO',
+        'RECHAZADA',
     ) NOT NULL,
     content TEXT NOT NULL,
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -167,4 +168,5 @@ CREATE TABLE notifications (
     INDEX idx_csent_at (sent_at),
 	INDEX idx_delivery_user_id (delivery_user_id)
 );
+
 

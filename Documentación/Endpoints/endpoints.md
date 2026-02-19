@@ -203,13 +203,96 @@ Content-Type: application/json
 ```
 ---
 
+## 📌 **ENDPOINTS DE USUARIOS**
+
+### 1. **Obtener Usuarios** (solo ADMINISTRADORES)
+
+```
+GET http://localhost:4000/auth/users/
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "users": [
+    {
+      "id": "06e903ab-8570-4b89-814d-46377fb247cf",
+      "email": "admin@admin.com",
+      "role": "ADMINISTRADOR"
+    },
+    {
+      "id": "2b3175cf-fcd6-4975-a967-3604ef21ece3",
+      "email": "correo@corre.com",
+      "role": "CLIENTE"
+    }
+  ]
+}
+```
+### **Respuesta con errores:**
+
+```json
+{
+  "message": "Unauthorized",
+  "statusCode": 401
+}
+```
+
+### 2. **Obtener usuarios por Rol** (solo ADMINISTRADORES)
+
+```
+POST http://localhost:4000/auth/users/role
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+```
+
+### **Json a enviar:**
+
+```json
+{
+  "role": "ADMINISTRADOR"
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "users": [
+    {
+      "id": "06e903ab-8570-4b89-814d-46377fb247cf",
+      "email": "admin@admin.com",
+      "role": "ADMINISTRADOR"
+    },
+    {
+      "id": "d55d6ea8-20aa-4e07-a32a-b8499baf1a1b",
+      "email": "administrador2@admin.com",
+      "role": "ADMINISTRADOR"
+    }
+  ]
+}
+```
+### **Respuesta con errores:**
+
+```json
+{
+  "message": "Unauthorized",
+  "statusCode": 401
+}
+```
+
 # 👉 **RESTAURANT SERVICE**
 
 ## 📌 **ENDPOINTS DE RESTAURANT**
 
 ### 1. **Crear Restaurante** (Solo ADMINISTRADOR)
+
+**ownerId:** será el usuario de tipo restaurante al que se le asignará el restaurante creado.
+
 ```
-POST http://localhost:4000/restaurants
+POST http://localhost:4000/restaurants/:ownerId
 Authorization: Bearer <token_admin>
 Content-Type: application/json
 ```
@@ -404,6 +487,61 @@ GET http://localhost:4000/restaurants?page=1&limit=10&onlyActive=true&search=abu
 {
   "statusCode": 500,
   "message": "Internal server error: Validation failed: page must not be less than 1"
+}
+```
+
+---
+
+### 6. **Listar restaurantes de un usuario** (solo RESTAURANTE)
+
+```
+GET http://localhost:4000/restaurants/owner/
+Authorization: Bearer <token_restaurant>
+```
+### **Respuesta exitosa:**
+```json
+{
+  "restaurants": [
+    {
+      "id": "f73b859e-0ca1-11f1-b290-002b6738278b",
+      "owner_id": "b49929cc-9db8-463a-81be-15d95713eb68",
+      "name": "Green Garden",
+      "description": "Comida saludable, ensaladas orgánicas y bowls.",
+      "address": "Via 5 4-12 Zona 4, Ciudad de Guatemala, Guatemala, Guatemala",
+      "phone": "+502 5555-0105",
+      "opening_time": "07:30",
+      "closing_time": "18:00",
+      "is_active": true,
+      "created_at": "2026-02-18T08:15:20.000Z",
+      "updated_at": "2026-02-18T08:15:20.000Z"
+    },
+    {
+      "id": "f73b8a9d-0ca1-11f1-b290-002b6738278b",
+      "owner_id": "b49929cc-9db8-463a-81be-15d95713eb68",
+      "name": "Burger Master",
+      "description": "Las mejores hamburguesas artesanales de la ciudad.",
+      "address": "Calle del Arco #22, Antigua Guatemala, Sacatepéquez, Guatemala",
+      "phone": "+502 5555-0106",
+      "opening_time": "10:00",
+      "closing_time": "22:00",
+      "is_active": true,
+      "created_at": "2026-02-18T08:15:20.000Z",
+      "updated_at": "2026-02-18T08:15:20.000Z"
+    },
+    {
+      "id": "f73b96fd-0ca1-11f1-b290-002b6738278b",
+      "owner_id": "b49929cc-9db8-463a-81be-15d95713eb68",
+      "name": "Café & Aroma",
+      "description": "Café de especialidad y repostería fina.",
+      "address": "6ta Avenida Norte 5-55, Antigua Guatemala, Sacatepéquez, Guatemala",
+      "phone": "+502 5555-0107",
+      "opening_time": "07:00",
+      "closing_time": "19:00",
+      "is_active": true,
+      "created_at": "2026-02-18T08:15:20.000Z",
+      "updated_at": "2026-02-18T08:15:20.000Z"
+    }
+  ]
 }
 ```
 
@@ -1080,70 +1218,7 @@ Authorization: Bearer <token_cliente>
 
 ## 🏪 **RESTAURANTE**
 
----
-
-### 4. **Aceptar Orden** (Solo RESTAURANTE)
-
-Cuando el restaurante comienza a preparar la orden, el estado cambia a `EN_PROCESO`.
-
-```
-PUT http://localhost:4000/orders/:id/accept
-Authorization: Bearer <token_restaurante>
-Content-Type: application/json
-```
-
-### **Json a enviar:**
-
-```json
-{
-  "restaurant_id": "550e8400-e29b-41d4-a716-446655440000"
-}
-```
-
-### **Respuesta exitosa:**
-
-```json
-{
-  "items": [
-    {
-      "id": "1ff0596c-e243-4148-b17c-fe3a6be0e492",
-      "menu_item_id": "9914aad2-5678-4c4d-b74b-23af4b40dd33",
-      "product_name": "Caldo de rez",
-      "quantity": 2,
-      "unit_price": 85.5,
-      "subtotal": 171
-    },
-    {
-      "id": "a2945829-f689-4148-bdf8-841187d4f7e2",
-      "menu_item_id": "fec28fce-0a5a-4739-87e7-b5d98e7ada46",
-      "product_name": "Pepián de Pollo Especial 2",
-      "quantity": 1,
-      "unit_price": 95,
-      "subtotal": 95
-    }
-  ],
-  "id": "2c36ce66-e856-478e-9ebd-e01b5313d7cf",
-  "client_id": "61836239-6f9a-4012-8206-47183c55cc72",
-  "restaurant_id": "8209e1cf-f337-4f0c-92c3-45aa753513cb",
-  "status": "EN_PROCESO",
-  "total_amount": 266,
-  "created_at": "",
-  "updated_at": "2026-02-13T23:50:05.000Z",
-  "rejection_reason": ""
-}
-```
----
-### **Respuesta con errores:**
-```json
-{
-  "message": "Validation failed (uuid is expected)",
-  "error": "Bad Request",
-  "statusCode": 400
-}
-```
----
-
-### 5. **Rechazar Orden** (Solo RESTAURANTE)
+### 4. **Rechazar Orden** (Solo RESTAURANTE)
 
 Permite al restaurante rechazar una orden, cambiando el estado a `RECHAZADA`.
 
@@ -1202,11 +1277,135 @@ Content-Type: application/json
   "message": "Solo el restaurante puede rechazar sus pedidos"
 }
 ```
+
 ---
 
-### 6. **Completar Orden** (Solo RESTAURANTE)
+### 5. **Aceptar Orden** (Solo RESTAURANTE)
 
-Una vez finalizada la preparación, el restaurante debe actualizar manualmente el estado a `FINALIZADA`.
+Cuando el restaurante comienza a preparar la orden, el estado cambia a `EN_PROCESO`.
+
+```
+PUT http://localhost:4000/orders/:id/accept
+Authorization: Bearer <token_restaurante>
+Content-Type: application/json
+```
+
+### **Json a enviar:**
+
+```json
+{
+  "restaurant_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "items": [
+    {
+      "id": "1ff0596c-e243-4148-b17c-fe3a6be0e492",
+      "menu_item_id": "9914aad2-5678-4c4d-b74b-23af4b40dd33",
+      "product_name": "Caldo de rez",
+      "quantity": 2,
+      "unit_price": 85.5,
+      "subtotal": 171
+    },
+    {
+      "id": "a2945829-f689-4148-bdf8-841187d4f7e2",
+      "menu_item_id": "fec28fce-0a5a-4739-87e7-b5d98e7ada46",
+      "product_name": "Pepián de Pollo Especial 2",
+      "quantity": 1,
+      "unit_price": 95,
+      "subtotal": 95
+    }
+  ],
+  "id": "2c36ce66-e856-478e-9ebd-e01b5313d7cf",
+  "client_id": "61836239-6f9a-4012-8206-47183c55cc72",
+  "restaurant_id": "8209e1cf-f337-4f0c-92c3-45aa753513cb",
+  "status": "EN_PROCESO",
+  "total_amount": 266,
+  "created_at": "",
+  "updated_at": "2026-02-13T23:50:05.000Z",
+  "rejection_reason": ""
+}
+```
+---
+
+### **Respuesta con errores:**
+```json
+{
+  "message": "Validation failed (uuid is expected)",
+  "error": "Bad Request",
+  "statusCode": 400
+}
+```
+
+---
+
+### 6. **Orden Lista** (Solo RESTAURANTE)
+
+Una vez finalizada la preparación, el restaurante debe actualizar el estado manualmente a `Lista`.
+
+```
+PUT http://localhost:4000/orders/:id/ready
+Authorization: Bearer <token_restaurante>
+Content-Type: application/json
+```
+
+### **Json a enviar:**
+
+```json
+{
+  "restaurant_id": "8209e1cf-f337-4f0c-92c3-45aa753513cb"
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "items": [
+    {
+      "id": "1ff0596c-e243-4148-b17c-fe3a6be0e492",
+      "menu_item_id": "9914aad2-5678-4c4d-b74b-23af4b40dd33",
+      "product_name": "Caldo de rez",
+      "quantity": 2,
+      "unit_price": 85.5,
+      "subtotal": 171
+    },
+    {
+      "id": "a2945829-f689-4148-bdf8-841187d4f7e2",
+      "menu_item_id": "fec28fce-0a5a-4739-87e7-b5d98e7ada46",
+      "product_name": "Pepián de Pollo Especial 2",
+      "quantity": 1,
+      "unit_price": 95,
+      "subtotal": 95
+    }
+  ],
+  "id": "2c36ce66-e856-478e-9ebd-e01b5313d7cf",
+  "client_id": "61836239-6f9a-4012-8206-47183c55cc72",
+  "restaurant_id": "8209e1cf-f337-4f0c-92c3-45aa753513cb",
+  "status": "FINALIZADA",
+  "total_amount": 266,
+  "created_at": "2026-02-13T23:02:08.000Z",
+  "updated_at": "2026-02-14T00:04:04.000Z",
+  "rejection_reason": ""
+}
+```
+### **Respuesta con errores:**
+```json
+{
+  "statusCode": 500,
+  "message": "Solo el restaurante puede completar sus pedidos"
+}
+```
+
+---
+
+### 8. **Completar Orden** (Solo RESTAURANTE)
+
+Una vez finalizada la preparación, el restaurante debe actualizar el estado a `FINALIZADA`.
 
 ```
 PUT http://localhost:4000/orders/:id/complete
@@ -1428,5 +1627,130 @@ Authorization: Bearer <token_admin>
 3. El restaurante la finaliza → `FINALIZADA`
 4. El cliente puede cancelarla antes de finalizar → `CANCELADA`
 5. El restaurante puede rechazarla → `RECHAZADA`
+
+---
+
+## 🚚 **DELIVERY**
+
+### 1. **Aceptar Orden** (Solo REPARTIDOR)
+
+```
+POST http://localhost:4000/delivery/orders/{orderId}/accept
+Authorization: Bearer <token_repartidor>
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "delivery": {
+    "id": "ae9c30dc-086f-47b1-9320-0e1d0ac1dbde",
+    "order_id": "5a276f34-6bd8-4055-b576-3566a14fb26b",
+    "delivery_user_id": "98d7952c-d1a6-4766-8a70-8a0d56073c3d",
+    "status": "EN_CAMINO",
+    "assigned_at": "2026-02-19T05:05:06.964Z",
+    "delivered_at": "",
+    "cancel_reason": ""
+  }
+}
+```
+
+### **Respuesta con errores:**
+```json
+{
+  "statusCode": 412,
+  "message": "La orden '5a276f34-6bd8-4055-b576-3566a14fb26b' ya fue aceptada por un repartidor."
+}
+```
+
+---
+
+### 2. **Actualizar estado** (Solo REPARTIDOR)
+
+**:deliveryId**: no es ni el id del usuario ni el id de la orden, es el id del proceso (ver base de datos deliveries)
+```
+POST http://localhost:4000/delivery/:deliveryId/status
+Authorization: Bearer <token_repartidor>
+```
+
+### **Json a enviar:**
+
++ **status: 2** : Orden Entregada
++ **status: 3** : Cancelar orden (Debe haber una razón)
++ **cancel_reason** : Es opcional, si status es 2 y obligatoria si status es 3.
+
+```json
+{
+  "status": 2,
+  "cancel_reason": ""
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "delivery": {
+    "id": "167feb03-6e50-4e29-9a64-40b03da8a96e",
+    "order_id": "5a276f34-6bd8-4055-b576-3566a14fb26b",
+    "delivery_user_id": "98d7952c-d1a6-4766-8a70-8a0d56073c3d",
+    "status": "ENTREGADA",
+    "assigned_at": "2026-02-19T06:58:19.758Z",
+    "delivered_at": "2026-02-19T07:04:01.078Z",
+    "cancel_reason": ""
+  }
+}
+```
+
+### **Respuesta con errores:**
+```json
+{
+  "statusCode": 412,
+  "message": "La orden '5a276f34-6bd8-4055-b576-3566a14fb26b' ya fue aceptada por un repartidor."
+}
+```
+
+---
+
+### 3. **Obtener ordenes** (Solo REPARTIDOR)
+
+* Lista las entregas del repartidor autenticado.
+* Query params: status  → "EN_CAMINO" | "ENTREGADA" | "CANCELADA" | (omitir = todas)
+*   page    → número de página (default: 1)
+*   limit   → resultados por página (default: 10)
+
+```
+GET http://localhost:4000/delivery?page=1&limit=10&status=ENTREGADA
+Authorization: Bearer <token_repartidor>
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "deliveries": [
+    {
+      "id": "319516f9-806d-456c-9cf9-ca7ab4213184",
+      "order_id": "5a276f34-6bd8-4055-b576-3566a14fb26b",
+      "delivery_user_id": "98d7952c-d1a6-4766-8a70-8a0d56073c3d",
+      "status": "CANCELADA",
+      "assigned_at": "2026-02-19T07:22:37.432Z",
+      "delivered_at": "",
+      "cancel_reason": "esta es una razón"
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "limit": 10
+}
+```
+
+### **Respuesta con errores:**
+```json
+{
+  "statusCode": 412,
+  "message": "La orden '5a276f34-6bd8-4055-b576-3566a14fb26b' ya fue aceptada por un repartidor."
+}
+```
 
 ---

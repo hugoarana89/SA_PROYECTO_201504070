@@ -58,6 +58,22 @@ export class OrderService implements OnModuleInit {
     }
   }
 
+  async rejectOrder(orderId: string, restaurantId: string, reason?: string) {
+    try {
+      this.logger.debug(`Rejecting order: ${orderId} for restaurant: ${restaurantId} with reason: ${reason || 'Sin razón especificada'}`);
+      return await lastValueFrom(
+        this.orderGrpc.RejectOrder({
+          order_id: orderId,
+          restaurant_id: restaurantId,
+          reason: reason || 'Sin razón especificada',
+        }),
+      );
+    } catch (error) {
+      this.logger.error(`Error rejecting order: ${error.message}`);
+      this.handleGrpcError(error);
+    }
+  }
+
   async acceptOrder(orderId: string, restaurantId: string) {
     try {
       this.logger.debug(`Accepting order: ${orderId} for restaurant: ${restaurantId}`);
@@ -73,18 +89,17 @@ export class OrderService implements OnModuleInit {
     }
   }
 
-  async rejectOrder(orderId: string, restaurantId: string, reason?: string) {
+  async readyOrder(orderId: string, restaurantId: string) {
     try {
-      this.logger.debug(`Rejecting order: ${orderId} for restaurant: ${restaurantId} with reason: ${reason || 'Sin razón especificada'}`);
+      this.logger.debug(`Marking order as ready: ${orderId} for restaurant: ${restaurantId}`);
       return await lastValueFrom(
-        this.orderGrpc.RejectOrder({
+        this.orderGrpc.ReadyOrder({
           order_id: orderId,
           restaurant_id: restaurantId,
-          reason: reason || 'Sin razón especificada',
         }),
       );
     } catch (error) {
-      this.logger.error(`Error rejecting order: ${error.message}`);
+      this.logger.error(`Error marking order as ready: ${error.message}`);
       this.handleGrpcError(error);
     }
   }

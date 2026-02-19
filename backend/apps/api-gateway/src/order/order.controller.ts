@@ -10,7 +10,7 @@ import { Role } from '../common/enums/role.enum';
 
 @Controller('orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
   // ==================== CLIENTE ====================
 
@@ -62,6 +62,19 @@ export class OrderController {
   // ==================== RESTAURANTE ====================
 
   /**
+   * PUT /orders/:id/reject - Rechazar una orden (RESTAURANTE)
+   */
+  @Put(':id/reject')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.RESTAURANTE)
+  async rejectOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: { restaurant_id: string; reason?: string },
+  ) {
+    return this.orderService.rejectOrder(id, body.restaurant_id, body.reason);
+  }
+
+  /**
    * PUT /orders/:id/accept - Aceptar una orden (RESTAURANTE)
    */
   @Put(':id/accept')
@@ -74,17 +87,17 @@ export class OrderController {
     return this.orderService.acceptOrder(id, restaurantId);
   }
 
-  /**
-   * PUT /orders/:id/reject - Rechazar una orden (RESTAURANTE)
+    /**
+   * PUT /orders/:id/ready - Marcar una orden como lista (RESTAURANTE)
    */
-  @Put(':id/reject')
+  @Put(':id/ready')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.RESTAURANTE)
-  async rejectOrder(
+  async readyOrder(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: { restaurant_id: string; reason?: string },
+    @Body('restaurant_id') restaurantId: string,
   ) {
-    return this.orderService.rejectOrder(id, body.restaurant_id, body.reason);
+    return this.orderService.readyOrder(id, restaurantId);
   }
 
   /**
