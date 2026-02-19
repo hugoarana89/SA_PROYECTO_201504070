@@ -4,13 +4,13 @@
 // SRP: Solo traduce entre entidad TypeORM y dominio.
 // ─────────────────────────────────────────────────────────────
 
-import { Injectable }       from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository }       from 'typeorm';
+import { Repository } from 'typeorm';
 
-import { Notification }           from '../../../domain/entities/Notification';
+import { Notification } from '../../../domain/entities/Notification';
 import { NotificationRepository } from '../../../domain/ports/NotificationRepository';
-import { NotificationEntity }     from '../entities/Notificationentity';
+import { NotificationEntity } from '../entities/Notificationentity';
 
 @Injectable()
 export class TypeOrmNotificationRepository implements NotificationRepository {

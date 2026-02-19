@@ -6,8 +6,9 @@
 // ─────────────────────────────────────────────────────────────
 
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { ConfigService }                    from '@nestjs/config';
-import * as sgMail                          from '@sendgrid/mail';
+import { ConfigService } from '@nestjs/config';
+import sgMail from '@sendgrid/mail';
+
 
 import { EmailSender, EmailPayload } from '../../domain/ports/EmailSender';
 

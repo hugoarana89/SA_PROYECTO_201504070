@@ -18,12 +18,12 @@ import {
   NotifyOrderRejectedRequestDto,
 } from '../../infrastructure/grpc/dto/notification.dto';
 
-import { SendOrderCreatedNotificationUseCase }      from '../../application/usecases/SendOrderCreatedNotificationUseCase';
-import { SendOrderCancelledByClientUseCase }        from '../../application/usecases/SendOrderCancelledByClientUseCase';
-import { SendOrderInTransitNotificationUseCase }    from '../../application/usecases/SendOrderInTransitNotificationUseCase';
-import { SendOrderCancelledByRestaurantUseCase }    from '../../application/usecases/SendOrderCancelledByRestaurantUseCase';
-import { SendOrderCancelledByDeliveryUseCase }      from '../../application/usecases/SendOrderCancelledByDeliveryUseCase';
-import { SendOrderRejectedNotificationUseCase }     from '../../application/usecases/SendOrderRejectedNotificationUseCase';
+import { SendOrderCreatedNotificationUseCase } from '../../application/usecases/SendOrderCreatedNotificationUseCase';
+import { SendOrderCancelledByClientUseCase } from '../../application/usecases/SendOrderCancelledByClientUseCase';
+import { SendOrderInTransitNotificationUseCase } from '../../application/usecases/SendOrderInTransitNotificationUseCase';
+import { SendOrderCancelledByRestaurantUseCase } from '../../application/usecases/SendOrderCancelledByRestaurantUseCase';
+import { SendOrderCancelledByDeliveryUseCase } from '../../application/usecases/SendOrderCancelledByDeliveryUseCase';
+import { SendOrderRejectedNotificationUseCase } from '../../application/usecases/SendOrderRejectedNotificationUseCase';
 
 @Controller()
 export class NotificationController {

@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { join }         from 'path';
+import { join } from 'path';
 import { NotificationServiceModule } from './notification-service.module';
 
 async function bootstrap() {
