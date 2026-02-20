@@ -43,6 +43,21 @@ export const orderService = {
     return response.json();
   },
 
+  // Cancelar orden por restaurante
+  async cancelOrderRestaurant(orderId: string, userId: string): Promise<Order> {
+    const response = await authFetch(`${API_URL}/orders/${orderId}/cancelRestaurant`, {
+      method: 'PUT',
+      body: JSON.stringify({ userId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al cancelar la orden');
+    }
+
+    return response.json();
+  },
+
   // Listar órdenes del cliente
   async getClientOrders(params?: {
     page?: number;

@@ -133,6 +133,16 @@ export class OrderController {
     );
   }
 
+  /**
+   * PUT /orders/:id/cancelRestaurant - Cancelar una orden (RESTAURANTE)
+   */
+  @Put(':id/cancelRestaurant')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.RESTAURANTE)
+  async cancelOrderRestaurant(@Param('id', ParseUUIDPipe) id: string, @Body('userId') userId: string,) {
+    return this.orderService.cancelOrder(id, userId);
+  }
+
   // ==================== ADMINISTRADOR ====================
 
   /**

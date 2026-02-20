@@ -1856,7 +1856,34 @@ Authorization: Bearer <token_repartidor>
 
 ## 🔔 **NOTIFICATION**
 
-El user_id es el id del cliente que ha solicitado la orden no del usuario que ha iniciado sesión. También se tiene que llamar al endpoint "Obtener email de usuario a partir de id" "POST http://localhost:4000/auth/users/email".
+El user_id es el id del cliente que ha solicitado la orden no del usuario que ha iniciado sesión. También se tiene que llamar al endpoint "Obtener email de usuario a partir de id", esto ultimo solo aplica para el Rol de restaurante y de repartidor.
+
+POST http://localhost:4000/auth/users/email
+
+```json
+{
+  "userId": "4458ba71-be0f-4bb6-a43f-959d55ec8011"
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "email": "marta@gmail.com"
+}
+```
+
+### **Respuesta con errores:**
+
+```json
+{
+  "message": "Unauthorized",
+  "statusCode": 401
+}
+```
+
+---
 
 ### 1. **El cliente realiza un pedido** (Solo CLIENTE)
 
