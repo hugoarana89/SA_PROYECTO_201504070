@@ -101,6 +101,12 @@ export class ListRestaurantsDto {
   search?: string;
 }
 
+export class ListRestaurantsByOwnerDto {
+  @IsNotEmpty()
+  @IsString()
+  owner_id: string;
+}
+
 export class GetRestaurantMenuRequestDto {
   @IsNotEmpty()
   @IsString()

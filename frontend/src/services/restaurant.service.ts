@@ -1,14 +1,16 @@
 import { authFetch } from "../utils/authFetch";
 import { CONFIG } from "../config/config";
 import type {
-    Restaurant,
-    CreateRestaurantDto,
-    UpdateRestaurantDto,
-    RestaurantsResponse,
-    MenuItem,
-    CreateMenuItemDto,
-    UpdateMenuItemDto,
-    MenuResponse
+  Restaurant,
+  CreateRestaurantDto,
+  UpdateRestaurantDto,
+  RestaurantsResponse,
+  MenuItem,
+  CreateMenuItemDto,
+  UpdateMenuItemDto,
+  MenuResponse,
+  UsersByRoleResponse,
+  UserByRole
 } from "../types/restaurant.types";
 
 const API_URL = CONFIG.API_URL;
@@ -16,9 +18,25 @@ const API_URL = CONFIG.API_URL;
 // ==================== RESTAURANTES ====================
 
 export const restaurantService = {
-  // Crear restaurante (solo ADMIN)
-  async createRestaurant(data: CreateRestaurantDto): Promise<Restaurant> {
-    const response = await authFetch(`${API_URL}/restaurants`, {
+  // Obtener usuarios por rol (solo ADMIN)
+  async getUsersByRole(role: string): Promise<UserByRole[]> {
+    const response = await authFetch(`${API_URL}/auth/users/role`, {
+      method: 'POST',
+      body: JSON.stringify({ role }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al obtener usuarios');
+    }
+
+    const data: UsersByRoleResponse = await response.json();
+    return data.users;
+  },
+
+  // Crear restaurante (solo ADMIN) - AHORA REQUIERE ownerId EN LA URL
+  async createRestaurant(ownerId: string, data: CreateRestaurantDto): Promise<Restaurant> {
+    const response = await authFetch(`${API_URL}/restaurants/${ownerId}`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -47,9 +65,10 @@ export const restaurantService = {
   },
 
   // Eliminar restaurante (solo ADMIN)
-  async deleteRestaurant(id: string): Promise<void> {
+  async deleteRestaurant(id: string, userIdRestaurant: string): Promise<void> {
     const response = await authFetch(`${API_URL}/restaurants/${id}`, {
       method: 'DELETE',
+      body: JSON.stringify({ userIdRestaurant }),
     });
 
     if (!response.ok) {
@@ -60,7 +79,7 @@ export const restaurantService = {
 
   // Obtener restaurante por ID (público)
   async getRestaurantById(id: string): Promise<Restaurant> {
-    const response = await fetch(`${API_URL}/restaurants/${id}`);
+    const response = await fetch(`${API_URL}/restaurants/unique/${id}`);
 
     if (!response.ok) {
       const error = await response.json();
@@ -78,7 +97,7 @@ export const restaurantService = {
     search?: string;
   }): Promise<RestaurantsResponse> {
     const queryParams = new URLSearchParams();
-    
+
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.onlyActive !== undefined) queryParams.append('onlyActive', params.onlyActive.toString());
@@ -90,6 +109,19 @@ export const restaurantService = {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || 'Error al listar restaurantes');
+    }
+
+    return response.json();
+  },
+
+  async getRestaurantsByOwner(): Promise<{ restaurants: Restaurant[] }> {
+    const response = await authFetch(`${API_URL}/restaurants/owner`, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Error al obtener restaurantes del propietario");
     }
 
     return response.json();

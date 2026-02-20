@@ -9,13 +9,16 @@ import {
   BanknotesIcon,
 } from '@heroicons/react/24/outline';
 import { orderService } from '../../services/order.service';
+import { notificationService } from '../../services/notification.service';
 import type { Order, OrderStatus } from '../../types/order.types';
 import { useCart } from '../../context/CartContext';
+import { getUser } from '../../utils/authStorage';
 import Spinner from '../../components/Spinner';
 
 const statusColors: Record<OrderStatus, { bg: string; text: string; icon: any }> = {
   'CREADA': { bg: 'bg-blue-100', text: 'text-blue-800', icon: ClockIcon },
   'EN_PROCESO': { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: ArrowPathIcon },
+  'LISTA': { bg: 'bg-orange-100', text: 'text-orange-800', icon: CheckCircleIcon },
   'FINALIZADA': { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircleIcon },
   'CANCELADA': { bg: 'bg-gray-100', text: 'text-gray-800', icon: XCircleIcon },
   'RECHAZADA': { bg: 'bg-red-100', text: 'text-red-800', icon: XCircleIcon },
@@ -24,13 +27,22 @@ const statusColors: Record<OrderStatus, { bg: string; text: string; icon: any }>
 const statusLabels: Record<OrderStatus, string> = {
   'CREADA': 'Creada',
   'EN_PROCESO': 'En proceso',
+  'LISTA': 'Lista para entregar',
   'FINALIZADA': 'Finalizada',
   'CANCELADA': 'Cancelada',
   'RECHAZADA': 'Rechazada',
 };
 
+// Obtiene email y nombre del cliente desde el token almacenado
+const getClientInfo = (): { email: string; name: string } => {
+  const user = getUser();
+  const email = user?.email || user?.sub || '';
+  const name = email.split('@')[0] || 'Cliente';
+  return { email, name };
+};
+
 // Para almacenar las órdenes que ya fueron notificadas
-const notifiedOrders = new Set<string>();
+//const notifiedOrders = new Set<string>();
 
 const MyOrders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -51,13 +63,9 @@ const MyOrders: React.FC = () => {
   // Efecto para verificar nuevas órdenes finalizadas
   useEffect(() => {
     const checkForCompletedOrders = () => {
-      orders.forEach(order => {
-        // Si la orden está finalizada y no ha sido notificada
+      /*orders.forEach(order => {
         if (order.status === 'FINALIZADA' && !notifiedOrders.has(order.id)) {
-          // Marcar como notificada
           notifiedOrders.add(order.id);
-          
-          // Agregar notificación
           setNotifications(prev => [
             ...prev,
             {
@@ -66,15 +74,11 @@ const MyOrders: React.FC = () => {
               orderId: order.id
             }
           ]);
-
-          // Auto-ocultar después de 8 segundos
           setTimeout(() => {
-            setNotifications(prev => 
-              prev.filter(n => n.orderId !== order.id)
-            );
+            setNotifications(prev => prev.filter(n => n.orderId !== order.id));
           }, 8000);
         }
-      });
+      });*/
     };
 
     if (orders.length > 0) {
@@ -91,13 +95,10 @@ const MyOrders: React.FC = () => {
         status: selectedStatus !== 'TODAS' ? selectedStatus : undefined,
       });
       
-      // Enriquecer órdenes con nombre del restaurante (idealmente el backend debería devolverlo)
-      const ordersWithRestaurantName = data.orders.map(order => ({
+      setOrders(data.orders.map(order => ({
         ...order,
-        restaurant_name: 'Restaurante', // Placeholder, en producción vendría del backend
-      }));
-      
-      setOrders(ordersWithRestaurantName);
+        restaurant_name: 'Restaurante',
+      })));
       setTotalPages(Math.ceil(data.total / data.limit));
       setError(null);
     } catch (err) {
@@ -107,13 +108,30 @@ const MyOrders: React.FC = () => {
     }
   };
 
-  const handleCancelOrder = async (orderId: string) => {
+  const handleCancelOrder = async (order: Order) => {
     if (!window.confirm('¿Estás seguro de cancelar esta orden?')) return;
     
     try {
-      setCancellingOrder(orderId);
-      await orderService.cancelOrder(orderId);
-      await loadOrders(); // Recargar órdenes
+      setCancellingOrder(order.id);
+
+      // Cancelar la orden
+      await orderService.cancelOrder(order.id);
+
+      // Enviar notificación de cancelación al cliente
+      const { email, name } = getClientInfo();
+      await notificationService.notifyOrderCancelledByClient({
+        client_name: name,
+        client_email: email,
+        order_id: order.id,
+        products: order.items.map(item => ({
+          name: item.product_name,
+          quantity: item.quantity,
+          price: item.unit_price,
+        })),
+        cancelled_at: new Date().toISOString(),
+      });
+
+      await loadOrders();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cancelar la orden');
     } finally {
@@ -126,7 +144,9 @@ const MyOrders: React.FC = () => {
     
     try {
       setLoading(true);
-      await orderService.createOrder({
+
+      // Crear la orden
+      const newOrder = await orderService.createOrder({
         restaurant_id: cart.restaurant_id,
         items: cart.items.map(item => ({
           menu_item_id: item.menu_item_id,
@@ -135,11 +155,25 @@ const MyOrders: React.FC = () => {
           product_name: item.product_name,
         })),
       });
-      
-      clearCart(); // Vaciar carrito después de crear la orden
-      await loadOrders(); // Recargar órdenes
-      
-      alert('¡Orden creada exitosamente!');
+
+      // Enviar notificación de orden creada al cliente
+      const { email, name } = getClientInfo();
+      await notificationService.notifyOrderCreated({
+        client_name: name,
+        client_email: email,
+        order_id: newOrder.id,
+        products: newOrder.items.map(item => ({
+          name: item.product_name,
+          quantity: item.quantity,
+          price: item.unit_price,
+        })),
+        total_amount: newOrder.total_amount,
+        created_at: newOrder.created_at,
+      });
+
+      clearCart();
+      await loadOrders();
+      alert('¡Orden creada exitosamente! Revisa tu correo para el resumen.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al crear la orden');
     } finally {
@@ -240,6 +274,7 @@ const MyOrders: React.FC = () => {
             <option value="TODAS">Todas las órdenes</option>
             <option value="CREADA">Creadas</option>
             <option value="EN_PROCESO">En proceso</option>
+            <option value="LISTA">Lista para entregar</option>
             <option value="FINALIZADA">Finalizadas</option>
             <option value="CANCELADA">Canceladas</option>
             <option value="RECHAZADA">Rechazadas</option>
@@ -331,13 +366,12 @@ const MyOrders: React.FC = () => {
                     </div>
                   )}
                   
-                  {/* Si la orden está finalizada, mostrar mensaje */}
                   {order.status === 'FINALIZADA' && (
                     <div className="border-t border-gray-200 bg-green-50 px-4 py-3">
                       <div className="flex items-center text-green-700">
                         <CheckCircleIcon className="h-5 w-5 mr-2" />
                         <p className="text-sm font-medium">
-                          ¡Tu orden está lista para recoger!
+                          ¡Has recibido tu orden!
                         </p>
                       </div>
                     </div>
@@ -346,7 +380,7 @@ const MyOrders: React.FC = () => {
                   {order.status === 'CREADA' && (
                     <div className="border-t border-gray-200 bg-gray-50 px-4 py-3 text-right">
                       <button
-                        onClick={() => handleCancelOrder(order.id)}
+                        onClick={() => handleCancelOrder(order)}
                         disabled={cancellingOrder === order.id}
                         className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                       >
@@ -393,37 +427,11 @@ const MyOrders: React.FC = () => {
                   </div>
                   <div>
                     <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                      <button
-                        onClick={() => setPage(1)}
-                        disabled={page === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                      >
-                        Inicio
-                      </button>
-                      <button
-                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                        className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                      >
-                        Anterior
-                      </button>
-                      <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                        {page}
-                      </span>
-                      <button
-                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                        disabled={page === totalPages}
-                        className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                      >
-                        Siguiente
-                      </button>
-                      <button
-                        onClick={() => setPage(totalPages)}
-                        disabled={page === totalPages}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                      >
-                        Final
-                      </button>
+                      <button onClick={() => setPage(1)} disabled={page === 1} className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Inicio</button>
+                      <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Anterior</button>
+                      <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">{page}</span>
+                      <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Siguiente</button>
+                      <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Final</button>
                     </nav>
                   </div>
                 </div>

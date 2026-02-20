@@ -78,6 +78,37 @@ export class AuthService implements OnModuleInit {
     }
   }
 
+  // llama al método GetAllUsers del servicio gRPC
+  async getAllUsers() {
+    try {
+      return await lastValueFrom(from(this.authGrpc.GetAllUsers({})));
+    } catch (error: any) {
+      this.handleGrpcError(error);
+    }
+  }
+
+  // llama al método FindByRole del servicio gRPC
+  async findByRole(role: string) {
+    try {
+      return await lastValueFrom(
+        from(this.authGrpc.FindByRole({ role })),
+      );
+    } catch (error: any) {
+      this.handleGrpcError(error);
+    }
+  }
+
+  // Obtener el email de usuario a partir de su id
+  async getEmailByUserId(id: string) {
+    try {
+      return await lastValueFrom(
+        from(this.authGrpc.GetEmailByUserId({ userId: id })),
+      );
+    } catch (error: any) {
+      this.handleGrpcError(error);
+    }
+  }
+
   // maneja los errores gRPC y los convierte en excepciones HTTP
   private handleGrpcError(error: any): never {
     switch (error.code) {

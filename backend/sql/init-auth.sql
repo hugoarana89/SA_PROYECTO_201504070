@@ -19,6 +19,7 @@ CREATE TABLE refresh_tokens (
     id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
     user_id VARCHAR(36) NOT NULL,
     token_hash VARCHAR(255) NOT NULL,
+    selector VARCHAR(32) UNIQUE NULL,
     expires_at DATETIME NOT NULL,
     revoked BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -31,6 +32,7 @@ CREATE TABLE refresh_tokens (
 
     INDEX idx_user_id (user_id),
     INDEX idx_token_hash (token_hash),
+    INDEX idx_selector (selector),
     INDEX idx_expires_at (expires_at)
 );
 

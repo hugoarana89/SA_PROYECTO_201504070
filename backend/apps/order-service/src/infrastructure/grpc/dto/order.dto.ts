@@ -44,16 +44,6 @@ export class CancelOrderRequestDto {
   client_id: string;
 }
 
-export class AcceptOrderRequestDto {
-  @IsNotEmpty()
-  @IsString()
-  order_id: string;
-
-  @IsNotEmpty()
-  @IsString()
-  restaurant_id: string;
-}
-
 export class RejectOrderRequestDto {
   @IsNotEmpty()
   @IsString()
@@ -66,6 +56,26 @@ export class RejectOrderRequestDto {
   @IsOptional()
   @IsString()
   reason: string;
+}
+
+export class AcceptOrderRequestDto {
+  @IsNotEmpty()
+  @IsString()
+  order_id: string;
+
+  @IsNotEmpty()
+  @IsString()
+  restaurant_id: string;
+}
+
+export class ReadyOrderRequestDto {
+  @IsNotEmpty()
+  @IsString()
+  order_id: string;
+
+  @IsNotEmpty()
+  @IsString()
+  restaurant_id: string;
 }
 
 export class CompleteOrderRequestDto {

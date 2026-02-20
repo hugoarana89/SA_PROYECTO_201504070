@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build api-gateway && nest build auth-service && nest build restaurant-service && nest build order-service",
+    "build": "nest build api-gateway && nest build auth-service && nest build restaurant-service && nest build order-service && nest build delivery-service && nest build notification-service",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -29,6 +29,7 @@
     "@nestjs/microservices": "^11.1.13",
     "@nestjs/platform-express": "^11.1.13",
     "@nestjs/typeorm": "^11.0.0",
+    "@sendgrid/mail": "^8.1.6",
     "bcryptjs": "^3.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",

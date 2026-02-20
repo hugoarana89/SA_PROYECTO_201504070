@@ -23,4 +23,24 @@ export interface AuthGrpcService {
   }>;
 
   Logout(data: { refreshToken: string }): Promise<{ success: boolean }>;
+
+  GetAllUsers(data: {}): Promise<{
+    users: Array<{
+      id: string;
+      email: string;
+      role: string;
+    }>;
+  }>;
+
+  FindByRole(data: { role: string }): Promise<{
+    users: Array<{
+      id: string;
+      email: string;
+      role: string;
+    }>;
+  }>;
+
+  GetEmailByUserId(data: { userId: string }): Promise<{
+    email: string;
+  }>;
 }

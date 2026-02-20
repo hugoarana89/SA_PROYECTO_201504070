@@ -15,13 +15,13 @@ export class RestaurantController {
   // ==================== RESTAURANTES ====================
   
   /**
-   * POST /restaurants - Crear un nuevo restaurante (ADMINISTRADOR)
+   * POST /restaurants/:ownerId - Crear un nuevo restaurante (ADMINISTRADOR)
    */
-  @Post()
+  @Post(':ownerId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMINISTRADOR)
-  async createRestaurant(@Body() body: any, @Request() req) {
-    return this.restaurantService.createRestaurant(body, req.user.userId);
+  async createRestaurant(@Body() body: any, /*@Request() req,*/ @Param('ownerId') ownerId: string) {
+    return this.restaurantService.createRestaurant(body, ownerId);
   }
 
   /**
@@ -44,14 +44,15 @@ export class RestaurantController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMINISTRADOR)
-  async deleteRestaurant(@Param('id') id: string, @Request() req) {
-    return this.restaurantService.deleteRestaurant(id, req.user.userId);
+  async deleteRestaurant(@Param('id') id: string, @Body('userIdRestaurant') userIdRestaurant: string) {
+    return this.restaurantService.deleteRestaurant(id, userIdRestaurant);
   }
 
   /**
-   * GET /restaurants/:id - Obtener un restaurante por ID
+   * GET /restaurants/unique/:id - Obtener un restaurante por ID
    */
-  @Get(':id')
+
+  @Get('unique/:id')
   async getRestaurant(@Param('id') id: string) {
     return this.restaurantService.getRestaurant(id);
   }
@@ -74,6 +75,17 @@ export class RestaurantController {
       search,
     );
   }
+
+   /**
+   * GET /restaurants/owner - Listar restaurantes de un propietario (RESTAURANTE)
+   */
+  @Get('owner')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.RESTAURANTE)
+  async listRestaurantsByOwner(@Request() req) {
+    return this.restaurantService.listRestaurantsByOwner(req.user.userId);
+  }
+
 
   // ==================== MENÚ ====================
   

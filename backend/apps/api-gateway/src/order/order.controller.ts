@@ -10,7 +10,7 @@ import { Role } from '../common/enums/role.enum';
 
 @Controller('orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
   // ==================== CLIENTE ====================
 
@@ -62,19 +62,6 @@ export class OrderController {
   // ==================== RESTAURANTE ====================
 
   /**
-   * PUT /orders/:id/accept - Aceptar una orden (RESTAURANTE)
-   */
-  @Put(':id/accept')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.RESTAURANTE)
-  async acceptOrder(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body('restaurant_id') restaurantId: string,
-  ) {
-    return this.orderService.acceptOrder(id, restaurantId);
-  }
-
-  /**
    * PUT /orders/:id/reject - Rechazar una orden (RESTAURANTE)
    */
   @Put(':id/reject')
@@ -88,11 +75,37 @@ export class OrderController {
   }
 
   /**
+   * PUT /orders/:id/accept - Aceptar una orden (RESTAURANTE)
+   */
+  @Put(':id/accept')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.RESTAURANTE)
+  async acceptOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('restaurant_id') restaurantId: string,
+  ) {
+    return this.orderService.acceptOrder(id, restaurantId);
+  }
+
+    /**
+   * PUT /orders/:id/ready - Marcar una orden como lista (RESTAURANTE)
+   */
+  @Put(':id/ready')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.RESTAURANTE)
+  async readyOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('restaurant_id') restaurantId: string,
+  ) {
+    return this.orderService.readyOrder(id, restaurantId);
+  }
+
+  /**
    * PUT /orders/:id/complete - Completar una orden (RESTAURANTE)
    */
   @Put(':id/complete')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.RESTAURANTE)
+  @Roles(Role.RESTAURANTE, Role.REPARTIDOR)
   async completeOrder(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('restaurant_id') restaurantId: string,
@@ -120,6 +133,16 @@ export class OrderController {
     );
   }
 
+  /**
+   * PUT /orders/:id/cancelRestaurant - Cancelar una orden (RESTAURANTE)
+   */
+  @Put(':id/cancelRestaurant')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.RESTAURANTE)
+  async cancelOrderRestaurant(@Param('id', ParseUUIDPipe) id: string, @Body('userId') userId: string,) {
+    return this.orderService.cancelOrder(id, userId);
+  }
+
   // ==================== ADMINISTRADOR ====================
 
   /**
@@ -127,7 +150,7 @@ export class OrderController {
    */
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMINISTRADOR, Role.RESTAURANTE)
+  @Roles(Role.ADMINISTRADOR, Role.RESTAURANTE, Role.REPARTIDOR)
   async listAllOrders(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -145,7 +168,7 @@ export class OrderController {
    */
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMINISTRADOR, Role.RESTAURANTE, Role.CLIENTE)
+  @Roles(Role.ADMINISTRADOR, Role.RESTAURANTE, Role.CLIENTE, Role.REPARTIDOR)
   async getOrder(@Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.getOrder(id);
   }

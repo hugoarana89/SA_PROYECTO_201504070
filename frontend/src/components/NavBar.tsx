@@ -12,6 +12,7 @@ import {
   XMarkIcon,
   CubeIcon,
   UserCircleIcon,
+  BookOpenIcon,
 } from "@heroicons/react/24/outline";
 
 const NavBar = () => {
@@ -194,6 +195,21 @@ const NavBar = () => {
                       isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 absolute"
                     }`}>
                       Restaurantes
+                    </span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/admin/menus"
+                    className={({ isActive }) =>
+                      `${linkClass} ${isActive ? activeClass : inactiveClass}`
+                    }
+                    title="Menús"
+                  >
+                    <BookOpenIcon className="w-5 h-5 flex-shrink-0" />
+                    <span className={`transition-all duration-300 whitespace-nowrap ${
+                      isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 absolute"
+                    }`}>
+                      Menús
                     </span>
                   </NavLink>
                 </>

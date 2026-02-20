@@ -25,6 +25,16 @@ export interface UpdateRestaurantDto extends Partial<CreateRestaurantDto> {
   is_active?: boolean;
 }
 
+export interface UserByRole {
+  id: string;
+  email: string;
+  role: string;
+}
+
+export interface UsersByRoleResponse {
+  users: UserByRole[];
+}
+
 export interface MenuItem {
   id: string;
   restaurant_id: string;

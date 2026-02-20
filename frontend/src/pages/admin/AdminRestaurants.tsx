@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { restaurantService } from '../../services/restaurant.service';
-import type { Restaurant, CreateRestaurantDto } from '../../types/restaurant.types';
+import type { Restaurant, CreateRestaurantDto, UserByRole } from '../../types/restaurant.types';
 import Spinner from '../../components/Spinner';
 
 const AdminRestaurants: React.FC = () => {
@@ -10,6 +10,9 @@ const AdminRestaurants: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingRestaurant, setEditingRestaurant] = useState<Restaurant | null>(null);
+  const [restaurantUsers, setRestaurantUsers] = useState<UserByRole[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [selectedOwnerId, setSelectedOwnerId] = useState<string>('');
   const [formData, setFormData] = useState<CreateRestaurantDto>({
     name: '',
     description: '',
@@ -20,9 +23,20 @@ const AdminRestaurants: React.FC = () => {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [showInactive, setShowInactive] = useState(false);
+
   useEffect(() => {
     loadRestaurants();
   }, [searchTerm, showInactive]);
+
+  // Cargar usuarios de tipo RESTAURANTE cuando se abre el modal de creación
+  useEffect(() => {
+    if (showModal && !editingRestaurant) {
+      loadRestaurantUsers();
+    } else if (editingRestaurant) {
+      // Si estamos editando, preseleccionamos el owner_id actual
+      setSelectedOwnerId(editingRestaurant.owner_id);
+    }
+  }, [showModal, editingRestaurant]);
 
   const loadRestaurants = async () => {
     try {
@@ -41,13 +55,37 @@ const AdminRestaurants: React.FC = () => {
     }
   };
 
+  const loadRestaurantUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const users = await restaurantService.getUsersByRole('RESTAURANTE');
+      setRestaurantUsers(users);
+      // Seleccionar el primer usuario por defecto si hay alguno
+      if (users.length > 0 && !selectedOwnerId) {
+        setSelectedOwnerId(users[0].id);
+      }
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar usuarios');
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar que se haya seleccionado un owner para crear
+    if (!editingRestaurant && !selectedOwnerId) {
+      setError('Debe seleccionar un usuario propietario');
+      return;
+    }
+
     try {
       if (editingRestaurant) {
         await restaurantService.updateRestaurant(editingRestaurant.id, formData);
       } else {
-        await restaurantService.createRestaurant(formData);
+        await restaurantService.createRestaurant(selectedOwnerId, formData);
       }
       setShowModal(false);
       resetForm();
@@ -61,7 +99,14 @@ const AdminRestaurants: React.FC = () => {
     if (!window.confirm('¿Estás seguro de eliminar este restaurante?')) return;
     
     try {
-      await restaurantService.deleteRestaurant(id);
+      const result = await restaurantService.getRestaurantById(id);
+
+      if (!result) {
+        setError('Restaurante no encontrado');
+        return;
+      }
+
+      await restaurantService.deleteRestaurant(id, result.owner_id);
       loadRestaurants();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al eliminar restaurante');
@@ -88,11 +133,13 @@ const AdminRestaurants: React.FC = () => {
       opening_time: '08:00',
       closing_time: '22:00',
     });
+    setSelectedOwnerId('');
     setEditingRestaurant(null);
   };
 
   const openEditModal = (restaurant: Restaurant) => {
     setEditingRestaurant(restaurant);
+    setSelectedOwnerId(restaurant.owner_id);
     setFormData({
       name: restaurant.name,
       description: restaurant.description,
@@ -176,13 +223,6 @@ const AdminRestaurants: React.FC = () => {
               {restaurants.map((restaurant) => (
                 <li key={restaurant.id} className="px-6 py-5 hover:bg-gray-50">
                   <div className="flex items-center space-x-4">
-                    {/* <div className="flex-shrink-0">
-                      <img
-                        className="h-16 w-16 rounded-lg object-cover"
-                        src={defaultImage}
-                        alt={restaurant.name}
-                      />
-                    </div> */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-indigo-600 truncate">
@@ -211,7 +251,8 @@ const AdminRestaurants: React.FC = () => {
                         </div>
                       </div>
                       <p className="text-sm text-gray-500 truncate">{restaurant.description}</p>
-                      <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-gray-500">
+                      <div className="mt-2 grid grid-cols-1 md:grid-cols-4 gap-2 text-xs text-gray-500">
+                        <span className="truncate">👤 Owner ID: {restaurant.owner_id}</span>
                         <span>📍 {restaurant.address}</span>
                         <span>📞 {restaurant.phone}</span>
                         <span>🕒 {restaurant.opening_time} - {restaurant.closing_time}</span>
@@ -250,6 +291,61 @@ const AdminRestaurants: React.FC = () => {
                     </h3>
                     
                     <div className="space-y-4">
+                      {/* Selector de usuario propietario - SOLO para creación */}
+                      {!editingRestaurant && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Usuario Propietario (RESTAURANTE) *
+                          </label>
+                          {loadingUsers ? (
+                            <div className="flex items-center justify-center py-2">
+                              <Spinner size="sm" />
+                              <span className="ml-2 text-sm text-gray-500">Cargando usuarios...</span>
+                            </div>
+                          ) : restaurantUsers.length === 0 ? (
+                            <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                              No hay usuarios de tipo RESTAURANTE disponibles. 
+                              Debes crear usuarios con rol RESTAURANTE primero.
+                            </div>
+                          ) : (
+                            <select
+                              value={selectedOwnerId}
+                              onChange={(e) => setSelectedOwnerId(e.target.value)}
+                              required
+                              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            >
+                              <option value="">Seleccione un usuario</option>
+                              {restaurantUsers.map((user) => (
+                                <option key={user.id} value={user.id}>
+                                  {user.email} (ID: {user.id.slice(0, 8)}...)
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                          <p className="mt-1 text-xs text-gray-500">
+                            Selecciona el usuario de tipo RESTAURANTE al que se asignará este restaurante
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Mostrar owner_id en modo edición (solo lectura) */}
+                      {editingRestaurant && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            ID del Propietario
+                          </label>
+                          <input
+                            type="text"
+                            value={editingRestaurant.owner_id}
+                            disabled
+                            className="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm text-gray-500"
+                          />
+                          <p className="mt-1 text-xs text-gray-500">
+                            El propietario no puede modificarse
+                          </p>
+                        </div>
+                      )}
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Nombre *</label>
                         <input
@@ -326,7 +422,12 @@ const AdminRestaurants: React.FC = () => {
                   <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                     <button
                       type="submit"
-                      className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
+                      disabled={!editingRestaurant && restaurantUsers.length === 0}
+                      className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm ${
+                        !editingRestaurant && restaurantUsers.length === 0
+                          ? 'bg-indigo-300 cursor-not-allowed'
+                          : 'bg-indigo-600 hover:bg-indigo-700'
+                      }`}
                     >
                       {editingRestaurant ? 'Actualizar' : 'Crear'}
                     </button>

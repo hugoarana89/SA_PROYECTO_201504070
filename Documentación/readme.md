@@ -1,72 +1,177 @@
+# Documentación de Requerimientos - Plataforma de Delivery (Microservicios)
+
 ## 1. Requerimientos Funcionales (RF)
 
-### A. Gestión de Usuarios y Autenticación (Auth-Service)
+Los requerimientos funcionales describen las interacciones entre el sistema y sus actores, definiendo las capacidades y servicios que la plataforma debe ofrecer.
 
-* El sistema debe permitir el registro de nuevos usuarios con email, contraseña y rol (Cliente, Restaurante, Repartidor, Administrador).
-* El sistema debe validar que el correo electrónico no esté duplicado en la base de datos.
-* El sistema debe permitir el inicio de sesión (Login) validando credenciales encriptadas.
-* El sistema debe generar un token JWT tras una autenticación exitosa.
-* El sistema debe permitir la validación de tokens y permisos según el rol del usuario para proteger los endpoints.
+### Módulo: Autenticación y Usuarios (Auth-Service)
 
-### B. Catálogo de Restaurantes (Restaurant-Catalog-Service)
+*   **RF-01: Registro de Usuario**
+    El sistema debe permitir que un nuevo usuario (Cliente, Restaurante, Repartidor) se registre proporcionando un email, una contraseña y seleccionando un rol. El sistema debe validar que el email no esté registrado previamente y almacenar la contraseña de forma encriptada.
+*   **RF-02: Inicio de Sesión (Login)**
+    El sistema debe permitir que un usuario registrado inicie sesión proporcionando su email y contraseña. El sistema verificará las credenciales y, si son correctas, generará un token de acceso.
+*   **RF-03: Generación y Validación de JWT**
+    El sistema debe generar un JSON Web Token (JWT) tras un inicio de sesión exitoso, que contenga la información del usuario (ID, email, rol). Este servicio también debe ser capaz de validar cualquier JWT presentado a otros servicios para garantizar la autenticidad de la petición.
 
-* El Administrador debe poder realizar el CRUD (Crear, Leer, Actualizar, Eliminar) de restaurantes.
-* El usuario con rol Restaurante debe poder gestionar el CRUD de su propio menú (platos, descripción, precio y disponibilidad).
-* El Cliente debe poder listar y visualizar los restaurantes disponibles.
-* El Cliente debe poder consultar el menú detallado de un restaurante específico.
+### Módulo: Catálogo de Restaurantes (Restaurant-Catalog-Service)
 
-### C. Gestión de Pedidos (Order-Service)
+*   **RF-04: Gestión de Restaurantes (CRUD)**
+    El sistema debe permitir a un usuario con rol de **ADMINISTRADOR** crear, leer, actualizar y eliminar restaurantes en la plataforma (nombre, dirección, horarios, contacto).
+*   **RF-05: Gestión de Menús (CRUD)**
+    El sistema debe permitir a un usuario con rol de **RESTAURANTE** crear, leer, actualizar y eliminar los ítems del menú de su propio restaurante (nombre del platillo, descripción, precio, disponibilidad).
+*   **RF-06: Consultar Catálogo de Restaurantes**
+    El sistema debe permitir a un usuario con rol de **CLIENTE** visualizar un listado de todos los restaurantes disponibles en la plataforma.
+*   **RF-07: Consultar Menú de un Restaurante**
+    El sistema debe permitir a un usuario con rol de **CLIENTE** visualizar el menú completo de un restaurante específico, mostrando los ítems activos con sus precios y descripciones.
 
-* El Cliente debe poder realizar una orden con los productos seleccionados.
-* El Cliente debe poder cancelar una orden (cambiando el estado a CANCELADO).
-* El Restaurante debe poder visualizar las órdenes recibidas y marcarlas como "EN PROCESO" o "FINALIZADO".
-* El Restaurante debe poder rechazar una orden por falta de stock o personal.
+### Módulo: Gestión de Pedidos (Order-Service)
 
-### D. Logística y Entrega (Delivery-Service)
+*   **RF-08: Realizar un Pedido**
+    El sistema debe permitir a un usuario con rol de **CLIENTE** crear una nueva orden a partir de los productos seleccionados de un restaurante. La orden se creará inicialmente con estado "CREADA".
+*   **RF-09: Cancelar un Pedido (Cliente)**
+    El sistema debe permitir a un usuario con rol de **CLIENTE** cancelar una orden propia que aún no haya sido aceptada por el restaurante, cambiando su estado a "CANCELADA".
+*   **RF-10: Gestionar Pedido (Restaurante)**
+    El sistema debe permitir a un usuario con rol de **RESTAURANTE** visualizar las nuevas órdenes, aceptarlas (cambiando el estado a "EN PROCESO") y marcarlas como "LISTAS" para su entrega una vez finalizada su preparación.
+*   **RF-11: Rechazar un Pedido (Restaurante)**
+    El sistema debe permitir a un usuario con rol de **RESTAURANTE** rechazar una orden entrante (por falta de stock o personal), cambiando su estado a "RECHAZADA".
 
-* El Repartidor debe poder visualizar las órdenes con estado "LISTA" y aceptarlas.
-* El sistema debe cambiar el estado a "EN CAMINO" cuando un repartidor acepta el pedido.
-* El Repartidor debe poder marcar una orden como "ENTREGADA" o "CANCELADA" (en caso de percance).
+### Módulo: Gestión de Entregas (Delivery-Service)
 
-### E. Notificaciones (Notification-Service)
+*   **RF-12: Aceptar un Pedido para Entrega**
+    El sistema debe permitir a un usuario con rol de **REPARTIDOR** visualizar los pedidos que están "LISTOS" para entrega y aceptar uno, cambiando el estado del pedido a "EN CAMINO".
+*   **RF-13: Actualizar Estado de Entrega**
+    El sistema debe permitir a un usuario con rol de **REPARTIDOR** actualizar el estado de un pedido que ha aceptado a "ENTREGADO" (al completar la entrega) o a "CANCELADO" (si ocurre un percance durante el trayecto).
 
-* El sistema debe enviar un correo automático al Cliente al:
-* Crear un pedido (Resumen y monto).
-* Cancelar un pedido (Confirmación de cancelación).
-* Asignar un repartidor (Nombre del repartidor y estado en camino).
-* Rechazar un pedido (Razón y estado).
+### Módulo: Notificaciones (Notification-Service)
 
----
-
-## 2. Requerimientos No Funcionales (RNF)
-
-### A. Arquitectura y Comunicación
-
-* **Arquitectura:** El sistema debe estar diseñado bajo una arquitectura de microservicios independientes.
-* **Comunicación Externa:** La comunicación entre el frontend y el backend debe realizarse mediante una **API Gateway** utilizando **REST**.
-* **Comunicación Interna:** La comunicación entre microservicios internos debe realizarse mediante **gRPC** para optimizar el rendimiento.
-* **Persistencia:** Cada microservicio debe tener su propia base de datos relacional independiente (aislamiento de datos).
-
-### B. Seguridad
-
-* **Autenticación:** El acceso a los servicios debe estar protegido mediante tokens **JWT**.
-* **Integridad de Datos:** Las contraseñas de los usuarios deben almacenarse utilizando algoritmos de encriptación o hashing seguros.
-
-### C. Despliegue e Infraestructura
-
-* **Contenedorización:** Cada microservicio debe estar empaquetado en una imagen de **Docker**.
-* **Orquestación Local:** El sistema debe poder levantarse íntegramente mediante **Docker-Compose**.
-* **Cloud:** La aplicación debe ser desplegable en la infraestructura de **Google Cloud Platform (GCP)**.
-
-### D. Calidad y Mantenibilidad
-
-* **Escalabilidad:** Los microservicios deben ser capaces de escalar de forma independiente según la carga.
-* **Documentación:** Se debe documentar la arquitectura, diagramas de componentes, contratos gRPC y endpoints de la API.
-* **Disponibilidad:** El diseño debe permitir que la caída de un servicio (ej. Notificaciones) no detenga el flujo crítico de otros servicios.
+*   **RF-14: Notificar Creación de Pedido**
+    El sistema debe enviar una notificación por correo electrónico al **CLIENTE** cuando este realice un pedido, incluyendo el resumen del mismo.
+*   **RF-15: Notificar Cancelación de Pedido (por Cliente)**
+    El sistema debe notificar al **CLIENTE** por correo electrónico cuando este cancele exitosamente un pedido.
+*   **RF-16: Notificar Pedido en Camino**
+    El sistema debe notificar al **CLIENTE** por correo electrónico cuando su pedido sea aceptado por un repartidor y el estado cambie a "EN CAMINO".
+*   **RF-17: Notificar Cancelación/Rechazo de Pedido**
+    El sistema debe notificar al **CLIENTE** por correo electrónico cuando su pedido sea rechazado por el restaurante o cancelado por el repartidor, incluyendo el motivo de la cancelación.
 
 ---
 
-## 3. Diagramas
+## 2. Requerimientos No Funcionales (RNF) y Atributos de Calidad
+
+Los requerimientos no funcionales especifican criterios que describen la operación del sistema en lugar de sus comportamientos específicos.
+
+*   **RNF-01: Seguridad**
+    *   **Autenticación y Autorización:** El acceso a los microservicios debe estar protegido mediante tokens JWT válidos. El API Gateway debe validar el token y verificar los roles (CLIENTE, RESTAURANTE, REPARTIDOR, ADMIN) antes de enrutar la petición.
+    *   **Confidencialidad:** Las contraseñas de los usuarios deben ser almacenadas utilizando un algoritmo de hashing seguro (ej. bcrypt). Todas las comunicaciones entre el cliente y el servidor, y entre microservicios, deben realizarse a través de canales seguros (HTTPS/gRPC con TLS).
+*   **RNF-02: Rendimiento y Escalabilidad**
+    *   La arquitectura de microservicios debe permitir el escalado horizontal independiente de cada servicio. Por ejemplo, el `Order-Service` debe poder escalarse para soportar picos de demanda en horas pico sin afectar al `Auth-Service`.
+    *   Las consultas al catálogo de restaurantes y menús (`Restaurant-Catalog-Service`) deben responder en un tiempo máximo de 500ms para garantizar una experiencia de usuario fluida.
+*   **RNF-03: Disponibilidad**
+    *   El sistema debe estar diseñado para tolerar fallos en servicios individuales. Si el `Notification-Service` falla, no debe impedir que un usuario realice un pedido. Los pedidos se procesarán y las notificaciones podrán encolarse o reintentarse más tarde.
+*   **RNF-04: Mantenibilidad**
+    *   El código fuente de cada microservicio debe estar desacoplado y ser desarrollado, probado y desplegado de forma independiente. Debe seguirse un conjunto de buenas prácticas de diseño y estándares de codificación para facilitar el mantenimiento y la incorporación de nuevas funcionalidades.
+*   **RNF-05: Usabilidad**
+    *   La plataforma debe ofrecer una interfaz intuitiva que guíe al usuario a través del proceso de registro, exploración de restaurantes y creación de pedidos, minimizando la cantidad de pasos y la curva de aprendizaje.
+
+---
+
+## 3. Casos de Uso
+
+A continuación, se describen los casos de uso principales para los actores identificados.
+
+### Actor: Cliente
+
+*   **Caso de Uso: CU-01 - Registrarse en la Plataforma**
+    *   **Actores:** Cliente (potencial)
+    *   **Descripción:** El usuario ingresa sus datos (email, contraseña) y selecciona el rol "CLIENTE" para crear una cuenta en el sistema.
+    *   **Flujo Principal:**
+        1.  El usuario accede a la opción de registro.
+        2.  El sistema solicita email, contraseña y rol.
+        3.  El usuario ingresa los datos y selecciona "CLIENTE".
+        4.  El sistema valida que el email no exista.
+        5.  El sistema encripta la contraseña y almacena el nuevo usuario.
+        6.  El sistema confirma el registro exitoso.
+
+*   **Caso de Uso: CU-02 - Iniciar Sesión**
+    *   **Actores:** Cliente
+    *   **Descripción:** El usuario se autentica en la plataforma para acceder a las funcionalidades protegidas.
+    *   **Flujo Principal:**
+        1.  El usuario accede a la opción de inicio de sesión.
+        2.  El sistema solicita email y contraseña.
+        3.  El usuario ingresa sus credenciales.
+        4.  El sistema valida las credenciales.
+        5.  El sistema genera un JWT y lo devuelve al usuario.
+        6.  El usuario accede al sistema con su token.
+
+*   **Caso de Uso: CU-03 - Explorar Restaurantes y Menús**
+    *   **Actores:** Cliente (Autenticado)
+    *   **Descripción:** El usuario navega por la lista de restaurantes disponibles y consulta el menú de uno en específico.
+    *   **Flujo Principal:**
+        1.  El usuario solicita ver el listado de restaurantes.
+        2.  El sistema muestra los restaurantes disponibles.
+        3.  El usuario selecciona un restaurante de su interés.
+        4.  El sistema muestra el menú completo de ese restaurante.
+
+*   **Caso de Uso: CU-04 - Realizar un Pedido**
+    *   **Actores:** Cliente (Autenticado)
+    *   **Descripción:** El usuario selecciona productos del menú de un restaurante y genera una orden de compra.
+    *   **Flujo Principal:**
+        1.  El usuario, desde el menú de un restaurante, añade productos a un "carrito".
+        2.  El usuario confirma la selección y procede a crear el pedido.
+        3.  El sistema registra el pedido con estado "CREADA".
+        4.  El sistema (a través de `Notification-Service`) envía un email de confirmación al cliente.
+        5.  El sistema notifica al restaurante del nuevo pedido.
+
+*   **Caso de Uso: CU-05 - Cancelar un Pedido**
+    *   **Actores:** Cliente (Autenticado)
+    *   **Descripción:** El usuario decide cancelar un pedido que ha realizado previamente y que aún no ha sido procesado por el restaurante.
+    *   **Flujo Principal:**
+        1.  El usuario consulta el estado de sus pedidos activos.
+        2.  El sistema muestra los pedidos con estado "CREADA".
+        3.  El usuario selecciona la opción "Cancelar" en uno de ellos.
+        4.  El sistema cambia el estado del pedido a "CANCELADA".
+        5.  El sistema (a través de `Notification-Service`) envía un email de cancelación al cliente.
+
+### Actor: Restaurante
+
+*   **Caso de Uso: CU-06 - Gestionar Menú**
+    *   **Actores:** Restaurante (Autenticado)
+    *   **Descripción:** El usuario (dueño del restaurante) añade, modifica o elimina platillos de su menú.
+    *   **Flujo Principal (Añadir ítem):**
+        1.  El restaurante accede al panel de gestión de su menú.
+        2.  El sistema muestra los ítems actuales.
+        3.  El restaurante selecciona "Añadir nuevo ítem".
+        4.  El sistema solicita nombre, descripción, precio.
+        5.  El restaurante ingresa los datos y confirma.
+        6.  El sistema guarda el nuevo ítem en el menú.
+
+*   **Caso de Uso: CU-07 - Gestionar Pedido Recibido**
+    *   **Actores:** Restaurante (Autenticado)
+    *   **Descripción:** El restaurante visualiza los pedidos entrantes y decide si aceptarlos, rechazarlos o marcarlos como listos.
+    *   **Flujo Principal (Aceptar Pedido):**
+        1.  El restaurante accede al listado de pedidos pendientes (estado "CREADA").
+        2.  El sistema muestra los nuevos pedidos.
+        3.  El restaurante selecciona un pedido y lo acepta.
+        4.  El sistema cambia el estado del pedido a "EN PROCESO".
+    *   **Flujo Alternativo (Rechazar Pedido):**
+        1.  El restaurante selecciona un pedido y elige "Rechazar".
+        2.  El sistema solicita una razón para la cancelación.
+        3.  El restaurante ingresa el motivo.
+        4.  El sistema cambia el estado del pedido a "RECHAZADA" y notifica al cliente.
+
+### Actor: Repartidor
+
+*   **Caso de Uso: CU-08 - Aceptar y Entregar un Pedido**
+    *   **Actores:** Repartidor (Autenticado)
+    *   **Descripción:** El repartidor toma un pedido que ya está listo en el restaurante y lo entrega al cliente.
+    *   **Flujo Principal:**
+        1.  El repartidor consulta los pedidos disponibles para entregar (estado "LISTA").
+        2.  El sistema muestra la lista de pedidos listos.
+        3.  El repartidor selecciona uno y lo acepta.
+        4.  El sistema cambia el estado del pedido a "EN CAMINO" y notifica al cliente.
+        5.  El repartidor, al llegar al destino, marca el pedido como entregado.
+        6.  El sistema cambia el estado del pedido a "ENTREGADO".
+
+## 4. Diagramas
 
 ### Diagrama entidad relación
 
@@ -98,7 +203,7 @@
 
 ---
 
-## 4. Justificación de la Elección de Frameworks
+## 5. Justificación de la Elección de Frameworks
 
 ### Elección del Framework para el Frontend: React
 
@@ -130,7 +235,7 @@ Finalmente, NestJS utiliza **TypeScript**, lo que aporta tipado fuerte, mayor ro
 
 ---
 
-## 5. Aplicación de los Principios SOLID
+## 6. Aplicación de los Principios SOLID
 
 El desarrollo del proyecto se realizó siguiendo los **principios SOLID**, con el objetivo de construir una plataforma modular, mantenible, escalable y alineada con una arquitectura de microservicios. Estos principios fueron aplicados principalmente en el backend utilizando **NestJS**, apoyándose en la documentación oficial de autenticación de NestJS, y complementados en el frontend desarrollado con **React**.
 
@@ -249,7 +354,7 @@ Esto permite cambiar la implementación interna de un servicio sin afectar a los
 
 ---
 
-## 6. Explicación del manejo de uso de JWT
+## 7. Explicación del manejo de uso de JWT
 
 El manejo de autenticación y autorización en el proyecto se implementó utilizando **JSON Web Tokens (JWT)** bajo una arquitectura de microservicios, con el objetivo de garantizar **seguridad, escalabilidad y desacoplamiento** entre el frontend, el API Gateway y el Auth-Service. La implementación sigue las buenas prácticas recomendadas en la documentación oficial de NestJS para autenticación y se apoya en el uso combinado de **Access Tokens** y **Refresh Tokens**.
 

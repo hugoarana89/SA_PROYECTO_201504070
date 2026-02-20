@@ -19,12 +19,10 @@ export class OrderEntity {
     enum: [
       'CREADA',
       'CANCELADA',
-      'EN_PROCESO',
-      'FINALIZADA',
       'RECHAZADA',
+      'EN_PROCESO',
       'LISTA',
-      'EN_CAMINO',
-      'ENTREGADA'
+      'FINALIZADA',
     ],
     default: 'CREADA'
   })
