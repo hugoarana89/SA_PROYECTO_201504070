@@ -283,6 +283,49 @@ Content-Type: application/json
 }
 ```
 
+
+
+
+
+
+
+
+
+### 3. **Obtener email de usuario a partir de id** (solo ADMINISTRADORES, RESTAURANTE, REPARTIDOR)
+
+```
+POST http://localhost:4000/auth/users/email
+Authorization: Bearer <token admin | restaurante | repartidor>
+Content-Type: application/json
+```
+
+### **Json a enviar:**
+
+```json
+{
+  "userId": "4458ba71-be0f-4bb6-a43f-959d55ec8011"
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "email": "marta@gmail.com"
+}
+```
+
+### **Respuesta con errores:**
+
+```json
+{
+  "message": "Unauthorized",
+  "statusCode": 401
+}
+```
+
+---
+
 # 👉 **RESTAURANT SERVICE**
 
 ## 📌 **ENDPOINTS DE RESTAURANT**
@@ -1750,6 +1793,266 @@ Authorization: Bearer <token_repartidor>
 {
   "statusCode": 412,
   "message": "La orden '5a276f34-6bd8-4055-b576-3566a14fb26b' ya fue aceptada por un repartidor."
+}
+```
+
+---
+
+## 🔔 **NOTIFICATION**
+
+### 1. **El cliente realiza un pedido** (Solo CLIENTE)
+
+```
+POST http://localhost:4000/notifications/order-created
+Authorization: Bearer <token_cliente>
+```
+
+### **Json a enviar:**
+
+```json
+{
+  "client_name": "Carlos Méndez",
+  "client_email": "carlos.mendez@gmail.com",
+  "order_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "products": [
+    { "name": "Hamburguesa Clásica", "quantity": 2, "price": 8.50 },
+    { "name": "Papas Fritas", "quantity": 1, "price": 3.00 },
+    { "name": "Refresco 500ml", "quantity": 2, "price": 2.25 }
+  ],
+  "total_amount": 24.50,
+  "created_at": "2026-02-19T15:30:00.000Z"
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "success": true,
+  "notification_id": "1151f480-cd9d-4a7f-a6b9-03cf90c9dc22",
+  "message": "Notificación de orden creada enviada"
+}
+```
+
+### **Respuesta con errores:**
+```json
+{
+  "statusCode": 503,
+  "message": "Error al enviar el correo: The from address does not match a verified Sender Identity. Mail cannot be sent until this error is resolved. Visit https://sendgrid.com/docs/for-developers/sending-email/sender-identity/ to see the Sender Identity requirements"
+}
+```
+
+---
+
+### 2. **El cliente cancela su orden** (Solo CLIENTE)
+
+```
+POST http://localhost:4000/notifications/order-cancelled-by-client
+Authorization: Bearer <token_cliente>
+```
+
+### **Json a enviar:**
+
+```json
+{
+  "client_name": "Carlos Méndez",
+  "client_email": "carlos.mendez@gmail.com",
+  "order_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "products": [
+    { "name": "Hamburguesa Clásica", "quantity": 2, "price": 8.50 },
+    { "name": "Papas Fritas", "quantity": 1, "price": 3.00 }
+  ],
+  "cancelled_at": "2026-02-19T15:45:00.000Z"
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "success": true,
+  "notification_id": "c2c3729e-6d07-4a1f-b26e-62d2f8a9ef71",
+  "message": "Notificación de cancelación por cliente enviada"
+}
+```
+
+### **Respuesta con errores:**
+```json
+{
+  "statusCode": 400,
+  "message": "Error de validación: cancelled_at should not be empty, cancelled_at must be a string"
+}
+```
+
+---
+
+### 3. **Un repartidor acepta y sale en camino** (Solo REPARTIDOR)
+
+```
+POST http://localhost:4000/notifications/order-in-transit
+Authorization: Bearer <token_repartidor>
+```
+
+### **Json a enviar:**
+
+```json
+{
+  "user_id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+  "client_email": "carlos.mendez@gmail.com",
+  "order_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "delivery_user_id": "d4e5f6a7-b8c9-0123-defa-456789012345",
+  "delivery_name": "Luis Hernández",
+  "products": [
+    { "name": "Hamburguesa Clásica", "quantity": 2, "price": 8.50 },
+    { "name": "Papas Fritas", "quantity": 1, "price": 3.00 }
+  ]
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "success": true,
+  "notification_id": "c2c3729e-6d07-4a1f-b26e-62d2f8a9ef71",
+  "message": "Notificación de orden en camino enviada al cliente"
+}
+```
+
+### **Respuesta con errores:**
+```json
+{
+  "statusCode": 400,
+  "message": "Error de validación"
+}
+```
+
+---
+
+### 4. **El repartidor cancela la entrega** (Solo REPARTIDOR)
+
+```
+POST http://localhost:4000/notifications/order-cancelled-by-delivery
+Authorization: Bearer <token_repartidor>
+```
+
+### **Json a enviar:**
+
+```json
+{
+  "user_id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+  "client_email": "carlos.mendez@gmail.com",
+  "order_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "delivery_user_id": "d4e5f6a7-b8c9-0123-defa-456789012345",
+  "delivery_name": "Luis Hernández",
+  "cancel_reason": "No puedo localizar la dirección de entrega",
+  "products": [
+    { "name": "Hamburguesa Clásica", "quantity": 2, "price": 8.50 },
+    { "name": "Papas Fritas", "quantity": 1, "price": 3.00 }
+  ]
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "success": true,
+  "notification_id": "c2c3729e-6d07-4a1f-b26e-62d2f8a9ef71",
+  "message": "Notificación de orden cancelada enviada al cliente"
+}
+```
+
+### **Respuesta con errores:**
+```json
+{
+  "statusCode": 400,
+  "message": "Error de validación"
+}
+```
+
+---
+
+### 5. **El restaurante cancela la orden** (Solo RESTAURANTE)
+
+```
+POST http://localhost:4000/notifications/order-cancelled-by-restaurant
+Authorization: Bearer <token_restaurante>
+```
+
+### **Json a enviar:**
+
+```json
+{
+  "user_id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+  "client_email": "carlos.mendez@gmail.com",
+  "order_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "restaurant_name": "Burger House GT",
+  "cancel_reason": "No contamos con los ingredientes necesarios para preparar el pedido",
+  "products": [
+    { "name": "Hamburguesa Clásica", "quantity": 2, "price": 8.50 },
+    { "name": "Papas Fritas", "quantity": 1, "price": 3.00 }
+  ]
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "success": true,
+  "notification_id": "c2c3729e-6d07-4a1f-b26e-62d2f8a9ef71",
+  "message": "Notificación de orden cancelada enviada al cliente"
+}
+```
+
+### **Respuesta con errores:**
+```json
+{
+  "statusCode": 400,
+  "message": "Error de validación"
+}
+```
+
+---
+
+### 6. **El restaurante cancela la orden** (Solo RESTAURANTE)
+
+```
+POST http://localhost:4000 /notifications/order-rejected
+Authorization: Bearer <token_restaurante>
+```
+
+### **Json a enviar:**
+
+```json
+{
+  "user_id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+  "client_email": "carlos.mendez@gmail.com",
+  "order_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "restaurant_name": "Burger House GT",
+  "products": [
+    { "name": "Hamburguesa Clásica", "quantity": 2, "price": 8.50 },
+    { "name": "Papas Fritas", "quantity": 1, "price": 3.00 }
+  ]
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "success": true,
+  "notification_id": "c2c3729e-6d07-4a1f-b26e-62d2f8a9ef71",
+  "message": "Notificación de orden rechazada enviada al cliente"
+}
+```
+
+### **Respuesta con errores:**
+```json
+{
+  "statusCode": 400,
+  "message": "Error de validación"
 }
 ```
 

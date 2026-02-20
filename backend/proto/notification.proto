@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package notification;
+
+// Enums
+enum NotificationType {
+  ORDEN_CREADA              = 0;
+  CANCELADA_CLIENTE         = 1;
+  CANCELADA_RESTAURANTE     = 2;
+  CANCELADA_REPARTIDOR      = 3;
+  EN_CAMINO                 = 4;
+  RECHAZADA                 = 5;
+}
+
+// Sub-mensaje de producto
+message OrderProduct {
+  string name     = 1;
+  int32  quantity = 2;
+  double price    = 3;
+}
+
+// NotifyOrderCreated
+message NotifyOrderCreatedRequest {
+  string              user_id       = 1;
+  string              client_name   = 2;
+  string              client_email  = 3;
+  string              order_id      = 4;
+  repeated OrderProduct products    = 5;
+  double              total_amount  = 6;
+  string              created_at    = 7;
+}
+
+// NotifyOrderCancelledByClient
+message NotifyOrderCancelledByClientRequest {
+  string              user_id        = 1;
+  string              client_name    = 2;
+  string              client_email   = 3;
+  string              order_id       = 4;
+  repeated OrderProduct products     = 5;
+  string              cancelled_at   = 6;
+}
+
+// NotifyOrderInTransit
+message NotifyOrderInTransitRequest {
+  string              user_id          = 1;
+  string              client_email     = 2;
+  string              order_id         = 3;
+  string              delivery_user_id = 4;
+  string              delivery_name    = 5;
+  repeated OrderProduct products       = 6;
+}
+
+// NotifyOrderCancelledByRestaurant
+message NotifyOrderCancelledByRestaurantRequest {
+  string              user_id           = 1;
+  string              client_email      = 2;
+  string              order_id          = 3;
+  string              restaurant_name   = 4;
+  string              cancel_reason     = 5;
+  repeated OrderProduct products        = 6;
+}
+
+// NotifyOrderCancelledByDelivery
+message NotifyOrderCancelledByDeliveryRequest {
+  string              user_id          = 1;
+  string              client_email     = 2;
+  string              order_id         = 3;
+  string              delivery_user_id = 4;
+  string              delivery_name    = 5;
+  string              cancel_reason    = 6;
+  repeated OrderProduct products       = 7;
+}
+
+// NotifyOrderRejected
+message NotifyOrderRejectedRequest {
+  string              user_id          = 1;
+  string              client_email     = 2;
+  string              order_id         = 3;
+  string              restaurant_name  = 4;
+  repeated OrderProduct products       = 5;
+}
+
+// Respuesta compartida
+message NotificationResponse {
+  bool   success         = 1;
+  string notification_id = 2;
+  string message         = 3;
+}
+
+// Service
+service NotificationService {
+  rpc NotifyOrderCreated               (NotifyOrderCreatedRequest)               returns (NotificationResponse);
+  rpc NotifyOrderCancelledByClient     (NotifyOrderCancelledByClientRequest)     returns (NotificationResponse);
+  rpc NotifyOrderInTransit             (NotifyOrderInTransitRequest)             returns (NotificationResponse);
+  rpc NotifyOrderCancelledByRestaurant (NotifyOrderCancelledByRestaurantRequest) returns (NotificationResponse);
+  rpc NotifyOrderCancelledByDelivery   (NotifyOrderCancelledByDeliveryRequest)   returns (NotificationResponse);
+  rpc NotifyOrderRejected              (NotifyOrderRejectedRequest)              returns (NotificationResponse);
+}

@@ -76,4 +76,16 @@ export class AuthController {
   getUsersByRole(@Body() body: { role: Role }) {
     return this.authService.findByRole(body.role);
   }
+
+  /**
+   * Get /auth/users/email - Obtener el email de usuario a partir de su id (solo accesible por administradores, restaurantes y repartidores)
+   * Usa guards para proteger el endpoint
+   * Obtener el email de usuario a partir de su id (solo accesible por administradores, restaurantes y repartidores)
+   */
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMINISTRADOR, Role.RESTAURANTE, Role.REPARTIDOR)
+  @Post('users/email')
+  getEmailByUserId(@Body() body: { userId: string }) {
+    return this.authService.getEmailByUserId(body.userId);
+  }
 }
