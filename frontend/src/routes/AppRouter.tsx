@@ -16,6 +16,7 @@ import AvailableDeliveries from "../pages/delivery/AvailableDeliveries";
 import ActiveDelivery from "../pages/delivery/ActiveDelivery";
 import NotFound from "../pages/errors/NotFound";
 import Unauthorized from "../pages/errors/Unauthorized";
+import AdminMenus from "../pages/admin/AdminMenus";
 
 export const RouterApp = createBrowserRouter([
   // Ruta principal con layout
@@ -64,6 +65,14 @@ export const RouterApp = createBrowserRouter([
         element: (
           <PrivateRoute roles={['ADMINISTRADOR']}>
             <AdminUsers />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "admin/menus",
+        element: (
+          <PrivateRoute roles={['ADMINISTRADOR']}>
+            <AdminMenus />
           </PrivateRoute>
         ),
       },

@@ -7,6 +7,7 @@ export interface RestaurantGrpcService {
   DeleteRestaurant(data: any): Observable<any>;
   GetRestaurant(data: any): Observable<any>;
   ListRestaurants(data: any): Observable<any>;
+  ListRestaurantsByOwner(data: any): Observable<any>;
   
   // Menú
   CreateMenuItem(data: any): Observable<any>;

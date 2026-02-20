@@ -66,7 +66,6 @@ export class RestaurantCatalogGrpcClient implements RestaurantCatalogClient, OnM
         throw new Error('Respuesta vacía del servicio de catálogo');
       }
 
-      // ✅ SOLUCIÓN: Tipar la respuesta explícitamente con 'as'
       const typedResponse = response as ValidateOrderItemsResponse;
 
       const result: ValidateOrderItemsResult = {

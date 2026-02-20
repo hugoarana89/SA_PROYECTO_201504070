@@ -43,6 +43,21 @@ export const orderService = {
     return response.json();
   },
 
+  // Cancelar orden por restaurante
+  async cancelOrderRestaurant(orderId: string, userId: string): Promise<Order> {
+    const response = await authFetch(`${API_URL}/orders/${orderId}/cancelRestaurant`, {
+      method: 'PUT',
+      body: JSON.stringify({ userId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al cancelar la orden');
+    }
+
+    return response.json();
+  },
+
   // Listar órdenes del cliente
   async getClientOrders(params?: {
     page?: number;
@@ -99,6 +114,20 @@ export const orderService = {
   },
 
   // Completar orden
+  async readyOrder(orderId: string, restaurantId: string): Promise<Order> {
+    const response = await authFetch(`${API_URL}/orders/${orderId}/ready`, {
+      method: 'PUT',
+      body: JSON.stringify({ restaurant_id: restaurantId } as RestaurantActionDto),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Error al marcar la orden como lista');
+    }
+
+    return response.json();
+  },
+
   async completeOrder(orderId: string, restaurantId: string): Promise<Order> {
     const response = await authFetch(`${API_URL}/orders/${orderId}/complete`, {
       method: 'PUT',
@@ -129,6 +158,8 @@ export const orderService = {
     if (params?.status) queryParams.append('status', params.status);
 
     const url = `${API_URL}/orders/restaurant/${restaurantId}${queryParams.toString() ? `?${queryParams}` : ''}`;
+
+    console.log('Fetching restaurant orders with URL:', url); // Debug log
     const response = await authFetch(url);
 
     if (!response.ok) {
@@ -139,7 +170,7 @@ export const orderService = {
     return response.json();
   },
 
-  // ==================== ADMIN ====================
+  // ==================== ADMIN y REPARTIDOR ====================
 
   // Listar todas las órdenes (admin)
   async getAllOrders(params?: {
@@ -154,6 +185,7 @@ export const orderService = {
     if (params?.status) queryParams.append('status', params.status);
 
     const url = `${API_URL}/orders${queryParams.toString() ? `?${queryParams}` : ''}`;
+    console.log('Fetching all orders with URL:', url); // Debug log
     const response = await authFetch(url);
 
     if (!response.ok) {

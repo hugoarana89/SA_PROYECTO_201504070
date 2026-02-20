@@ -9,6 +9,7 @@ import { UpdateRestaurantUseCase } from './application/usecases/restaurant/updat
 import { DeleteRestaurantUseCase } from './application/usecases/restaurant/delete-restaurant.usecase';
 import { GetRestaurantUseCase } from './application/usecases/restaurant/get-restaurant.usecase';
 import { ListRestaurantsUseCase } from './application/usecases/restaurant/list-restaurants.usecase';
+import { ListRestaurantsByOwnerUseCase } from './application/usecases/restaurant/list-restaurant-by-owner.usecase';
 
 // Use Cases - Menu
 import { CreateMenuItemUseCase } from './application/usecases/menu/create-menu-item.usecase';
@@ -53,6 +54,7 @@ import { MENU_ITEM_REPOSITORY } from './domain/ports/menu-item.repository.interf
     DeleteRestaurantUseCase,
     GetRestaurantUseCase,
     ListRestaurantsUseCase,
+    ListRestaurantsByOwnerUseCase,
     
     // Menu Use Cases
     CreateMenuItemUseCase,

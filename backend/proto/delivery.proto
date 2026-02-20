@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package delivery;
+
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+enum DeliveryStatus {
+  ASIGNADA  = 0;
+  EN_CAMINO = 1;
+  ENTREGADA = 2;
+  CANCELADA = 3;
+}
+
+// ─────────────────────────────────────────────
+// Messages
+// ─────────────────────────────────────────────
+message Delivery {
+  string id               = 1;
+  string order_id         = 2;
+  string delivery_user_id = 3;
+  DeliveryStatus status   = 4;
+  string assigned_at      = 5;
+  string delivered_at     = 6;
+  string cancel_reason    = 7;
+}
+
+// AcceptOrder
+message AcceptOrderRequest {
+  string order_id         = 1;
+  string delivery_user_id = 2;
+}
+
+message AcceptOrderResponse {
+  Delivery delivery = 1;
+}
+
+// UpdateDeliveryStatus
+message UpdateDeliveryStatusRequest {
+  string         delivery_id   = 1;
+  DeliveryStatus status        = 2;
+  string         cancel_reason = 3; // solo si status = CANCELADA
+}
+
+message UpdateDeliveryStatusResponse {
+  Delivery delivery = 1;
+}
+
+// GetDelivery
+message GetDeliveryRequest {
+  string delivery_id = 1;
+}
+
+message GetDeliveryResponse {
+  Delivery delivery = 1;
+}
+
+// ListDeliveries — filtrado por repartidor y opcionalmente por status
+message ListDeliveriesRequest {
+  string delivery_user_id = 1; // ID del repartidor autenticado
+  string status_filter    = 2; // "EN_CAMINO" | "ENTREGADA" | "CANCELADA" | "" (todas)
+  int32  page             = 3;
+  int32  limit            = 4;
+}
+
+message ListDeliveriesResponse {
+  repeated Delivery deliveries = 1;
+  int32             total      = 2;
+  int32             page       = 3;
+  int32             limit      = 4;
+}
+
+// ─────────────────────────────────────────────
+// Service
+// ─────────────────────────────────────────────
+service DeliveryService {
+  rpc AcceptOrder           (AcceptOrderRequest)           returns (AcceptOrderResponse);
+  rpc UpdateDeliveryStatus  (UpdateDeliveryStatusRequest)  returns (UpdateDeliveryStatusResponse);
+  rpc GetDelivery           (GetDeliveryRequest)           returns (GetDeliveryResponse);
+  rpc ListDeliveries        (ListDeliveriesRequest)        returns (ListDeliveriesResponse);
+}

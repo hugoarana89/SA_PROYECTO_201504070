@@ -1,12 +1,10 @@
 export enum OrderStatusEnum {
   CREATED = 'CREADA',
   CANCELLED = 'CANCELADA',
-  IN_PROGRESS = 'EN_PROCESO',
-  COMPLETED = 'FINALIZADA',
   REJECTED = 'RECHAZADA',
+  IN_PROGRESS = 'EN_PROCESO',
   READY = 'LISTA',
-  ON_THE_WAY = 'EN_CAMINO',
-  DELIVERED = 'ENTREGADA',
+  COMPLETED = 'FINALIZADA',
 }
 
 export class OrderStatus {
@@ -27,16 +25,20 @@ export class OrderStatus {
     return new OrderStatus(OrderStatusEnum.CANCELLED);
   }
 
+  static get REJECTED(): OrderStatus {
+    return new OrderStatus(OrderStatusEnum.REJECTED);
+  }
+
   static get IN_PROGRESS(): OrderStatus {
     return new OrderStatus(OrderStatusEnum.IN_PROGRESS);
   }
 
-  static get COMPLETED(): OrderStatus {
-    return new OrderStatus(OrderStatusEnum.COMPLETED);
+  static get READY(): OrderStatus {
+    return new OrderStatus(OrderStatusEnum.READY);
   }
 
-  static get REJECTED(): OrderStatus {
-    return new OrderStatus(OrderStatusEnum.REJECTED);
+  static get COMPLETED(): OrderStatus {
+    return new OrderStatus(OrderStatusEnum.COMPLETED);
   }
 
   get value(): string {

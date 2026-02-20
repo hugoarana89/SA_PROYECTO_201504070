@@ -12,6 +12,8 @@ lerna-debug.log*
 /node_modules
 /build
 
+/.vite
+
 
 node_modules
 dist

@@ -8,7 +8,6 @@ CREATE TABLE deliveries (
     order_id VARCHAR(36) NOT NULL, -- este es el id de la orden
     delivery_user_id VARCHAR(36) NOT NULL, -- Referencia al usuario repartidor en auth_db 
     status ENUM(
-        'ASIGNADA',
         'EN_CAMINO',
         'ENTREGADA',
         'CANCELADA'

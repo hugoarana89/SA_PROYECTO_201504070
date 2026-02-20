@@ -1,0 +1,82 @@
+// ─────────────────────────────────────────────────────────────
+// DTOs gRPC del Delivery-Service
+// ─────────────────────────────────────────────────────────────
+
+import {
+  IsUUID,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsInt,
+  IsPositive,
+  Min,
+  Max,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+export enum DeliveryStatusGrpc {
+  ASIGNADA  = 'ASIGNADA',
+  EN_CAMINO = 'EN_CAMINO',
+  ENTREGADA = 'ENTREGADA',
+  CANCELADA = 'CANCELADA',
+}
+
+// ── AcceptOrder ───────────────────────────────────────────────
+export class AcceptOrderRequestDto {
+  @IsUUID('4')
+  order_id: string;
+
+  @IsUUID('4')
+  delivery_user_id: string;
+}
+
+// ── UpdateDeliveryStatus ──────────────────────────────────────
+export class UpdateDeliveryStatusRequestDto {
+  @IsUUID('4')
+  delivery_id: string;
+
+  @IsEnum(DeliveryStatusGrpc)
+  status: DeliveryStatusGrpc;
+
+  @IsOptional()
+  @IsString()
+  cancel_reason?: string;
+}
+
+// ── GetDelivery ───────────────────────────────────────────────
+export class GetDeliveryRequestDto {
+  @IsUUID('4')
+  delivery_id: string;
+}
+
+// ── ListDeliveries ────────────────────────────────────────────
+// ASIGNADA no es filtrable: solo aplica a EN_CAMINO, ENTREGADA, CANCELADA
+const FILTERABLE_STATUSES = [
+  DeliveryStatusGrpc.EN_CAMINO,
+  DeliveryStatusGrpc.ENTREGADA,
+  DeliveryStatusGrpc.CANCELADA,
+] as const;
+
+export class ListDeliveriesRequestDto {
+  @IsUUID('4')
+  delivery_user_id: string;
+
+  @IsOptional()
+  @IsEnum(FILTERABLE_STATUSES, {
+    message: `status_filter debe ser uno de: ${FILTERABLE_STATUSES.join(', ')}`,
+  })
+  status_filter?: string; // "" vacío o ausente = todas
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number = 10;
+}

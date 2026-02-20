@@ -1,12 +1,13 @@
-import { Controller, Logger, OnModuleInit } from '@nestjs/common';
-import { GrpcMethod, Payload } from '@nestjs/microservices';
+import { Controller, Logger } from '@nestjs/common';
+import { Payload } from '@nestjs/microservices';
 import { GrpcValidate } from '../../../common/decorators/grpc-validate.decorator';
 
 // Use Cases
 import { CreateOrderUseCase } from '../../../application/usecases/create-order.usecase';
 import { CancelOrderUseCase } from '../../../application/usecases/cancel-order.usecase';
-import { AcceptOrderUseCase } from '../../../application/usecases/accept-order.usecase';
 import { RejectOrderUseCase } from '../../../application/usecases/reject-order.usecase';
+import { AcceptOrderUseCase } from '../../../application/usecases/accept-order.usecase';
+import { ReadyOrderUseCase } from '../../../application/usecases/ready-order.usecase';
 import { CompleteOrderUseCase } from '../../../application/usecases/complete-order.usecase';
 import { GetOrderUseCase } from '../../../application/usecases/get-order.usecase';
 import { ListOrdersUseCase } from '../../../application/usecases/list-orders.usecase';
@@ -15,8 +16,9 @@ import { ListOrdersUseCase } from '../../../application/usecases/list-orders.use
 import {
   CreateOrderRequestDto,
   CancelOrderRequestDto,
-  AcceptOrderRequestDto,
   RejectOrderRequestDto,
+  AcceptOrderRequestDto,
+  ReadyOrderRequestDto,
   CompleteOrderRequestDto,
   GetOrderRequestDto,
   ListOrdersRequestDto,
@@ -31,8 +33,9 @@ export class OrderGrpcController {
   constructor(
     private readonly createOrderUseCase: CreateOrderUseCase,
     private readonly cancelOrderUseCase: CancelOrderUseCase,
-    private readonly acceptOrderUseCase: AcceptOrderUseCase,
     private readonly rejectOrderUseCase: RejectOrderUseCase,
+    private readonly acceptOrderUseCase: AcceptOrderUseCase,
+    private readonly readyOrderUseCase: ReadyOrderUseCase,
     private readonly completeOrderUseCase: CompleteOrderUseCase,
     private readonly getOrderUseCase: GetOrderUseCase,
     private readonly listOrdersUseCase: ListOrdersUseCase,
@@ -69,6 +72,21 @@ export class OrderGrpcController {
     });
 
     return this.mapOrderToResponse(result);
+  };
+
+  @GrpcValidate(RejectOrderRequestDto, 'RejectOrder')
+  async rejectOrder(@Payload() data: RejectOrderRequestDto) {
+    this.logger.debug(
+      `📤 Recibida solicitud de rechazo de orden 
+      ${data.order_id} para restaurante ${data.restaurant_id} con motivo: ${data.reason}`,
+    );
+    const result = await this.rejectOrderUseCase.execute({
+      orderId: data.order_id,
+      restaurantId: data.restaurant_id,
+      reason: data.reason,
+    });
+
+    return this.mapOrderToResponse(result);
   }
 
   @GrpcValidate(AcceptOrderRequestDto, 'AcceptOrder')
@@ -84,16 +102,15 @@ export class OrderGrpcController {
     return this.mapOrderToResponse(result);
   }
 
-  @GrpcValidate(RejectOrderRequestDto, 'RejectOrder')
-  async rejectOrder(@Payload() data: RejectOrderRequestDto) {
+  @GrpcValidate(ReadyOrderRequestDto, 'ReadyOrder')
+  async readyOrder(@Payload() data: ReadyOrderRequestDto) {
     this.logger.debug(
-      `📤 Recibida solicitud de rechazo de orden 
-      ${data.order_id} para restaurante ${data.restaurant_id} con motivo: ${data.reason}`,
+      `📤 Recibida solicitud de completación de orden 
+      ${data.order_id} para restaurante ${data.restaurant_id}`,
     );
-    const result = await this.rejectOrderUseCase.execute({
+    const result = await this.readyOrderUseCase.execute({
       orderId: data.order_id,
-      restaurantId: data.restaurant_id,
-      reason: data.reason,
+      restaurantId: data.restaurant_id
     });
 
     return this.mapOrderToResponse(result);
