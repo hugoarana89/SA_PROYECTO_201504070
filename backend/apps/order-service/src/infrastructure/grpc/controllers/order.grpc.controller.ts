@@ -1,5 +1,5 @@
 import { Controller, Logger } from '@nestjs/common';
-import { GrpcMethod, Payload } from '@nestjs/microservices';
+import { Payload } from '@nestjs/microservices';
 import { GrpcValidate } from '../../../common/decorators/grpc-validate.decorator';
 
 // Use Cases

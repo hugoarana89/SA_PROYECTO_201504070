@@ -67,9 +67,9 @@ export class Order {
       throw new DomainException('Solo el cliente puede cancelar su propio pedido.');
     }
 
-    if (this._status.value !== OrderStatus.CREATED.value) {
+    /*if (this._status.value !== OrderStatus.CREATED.value) {
       throw new DomainException(`No se puede cancelar una orden en estado ${this._status.value}`);
-    }
+    }*/
 
     this._status = OrderStatus.CANCELLED;
     this._updatedAt = new Date();

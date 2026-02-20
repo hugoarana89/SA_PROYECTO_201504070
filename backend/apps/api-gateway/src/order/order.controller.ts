@@ -105,7 +105,7 @@ export class OrderController {
    */
   @Put(':id/complete')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.RESTAURANTE)
+  @Roles(Role.RESTAURANTE, Role.REPARTIDOR)
   async completeOrder(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('restaurant_id') restaurantId: string,
@@ -133,6 +133,16 @@ export class OrderController {
     );
   }
 
+  /**
+   * PUT /orders/:id/cancelRestaurant - Cancelar una orden (RESTAURANTE)
+   */
+  @Put(':id/cancelRestaurant')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.RESTAURANTE)
+  async cancelOrderRestaurant(@Param('id', ParseUUIDPipe) id: string, @Body('userId') userId: string,) {
+    return this.orderService.cancelOrder(id, userId);
+  }
+
   // ==================== ADMINISTRADOR ====================
 
   /**
@@ -140,7 +150,7 @@ export class OrderController {
    */
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMINISTRADOR, Role.RESTAURANTE)
+  @Roles(Role.ADMINISTRADOR, Role.RESTAURANTE, Role.REPARTIDOR)
   async listAllOrders(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -158,7 +168,7 @@ export class OrderController {
    */
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMINISTRADOR, Role.RESTAURANTE, Role.CLIENTE)
+  @Roles(Role.ADMINISTRADOR, Role.RESTAURANTE, Role.CLIENTE, Role.REPARTIDOR)
   async getOrder(@Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.getOrder(id);
   }

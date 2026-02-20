@@ -283,14 +283,6 @@ Content-Type: application/json
 }
 ```
 
-
-
-
-
-
-
-
-
 ### 3. **Obtener email de usuario a partir de id** (solo ADMINISTRADORES, RESTAURANTE, REPARTIDOR)
 
 ```
@@ -1032,6 +1024,7 @@ Los estados posibles de una orden son:
 
 * `CREADA`
 * `EN_PROCESO`
+* `LISTA`
 * `FINALIZADA`
 * `CANCELADA`
 * `RECHAZADA`
@@ -1452,7 +1445,7 @@ Una vez finalizada la preparación, el restaurante debe actualizar el estado a `
 
 ```
 PUT http://localhost:4000/orders/:id/complete
-Authorization: Bearer <token_restaurante>
+Authorization: Bearer <token_restaurante | token_repartidor>
 Content-Type: application/json
 ```
 
@@ -1599,19 +1592,82 @@ Authorization: Bearer <token_restaurante>
 
 ---
 
-### 8. **Listar Todas las Órdenes** (Solo ADMINISTRADOR)
+### 8. **Listar Todas las Órdenes** (Solo ADMINISTRADOR Y REPARTIDOR)
 
 ```
 GET http://localhost:4000/orders?page=1&limit=10&status=CREADA
-Authorization: Bearer <token_admin>
+Authorization: Bearer <token_admin | token_repartidor>
 ```
+
+| Query    | Descripción           | Ejemplo  |
+| -------- | --------------------- | -------- |
+| `page`   | Número de página      | `1`      |
+| `limit`  | Resultados por página | `10`     |
+| `status` | Filtrar por estado    | `CREADA` |
 
 ### **Respuesta exitosa:**
 
 ```json
 {
-  "orders": [],
-  "total": 0,
+  "orders": [
+    {
+      "items": [
+        {
+          "id": "1ff0596c-e243-4148-b17c-fe3a6be0e492",
+          "menu_item_id": "9914aad2-5678-4c4d-b74b-23af4b40dd33",
+          "product_name": "Caldo de rez",
+          "quantity": 2,
+          "unit_price": 85.5,
+          "subtotal": 171
+        },
+        {
+          "id": "a2945829-f689-4148-bdf8-841187d4f7e2",
+          "menu_item_id": "fec28fce-0a5a-4739-87e7-b5d98e7ada46",
+          "product_name": "Pepián de Pollo Especial 2",
+          "quantity": 1,
+          "unit_price": 95,
+          "subtotal": 95
+        }
+      ],
+      "id": "2c36ce66-e856-478e-9ebd-e01b5313d7cf",
+      "client_id": "61836239-6f9a-4012-8206-47183c55cc72",
+      "restaurant_id": "8209e1cf-f337-4f0c-92c3-45aa753513cb",
+      "status": "FINALIZADA",
+      "total_amount": 266,
+      "created_at": "2026-02-13T23:02:08.000Z",
+      "updated_at": "2026-02-14T00:04:04.000Z",
+      "rejection_reason": ""
+    },
+    {
+      "items": [
+        {
+          "id": "b2cdbfba-e179-4eec-96d6-0c1d9ad7d01d",
+          "menu_item_id": "9914aad2-5678-4c4d-b74b-23af4b40dd33",
+          "product_name": "Caldo de rez",
+          "quantity": 2,
+          "unit_price": 85.5,
+          "subtotal": 171
+        },
+        {
+          "id": "ddbe856a-8393-4b17-9ed3-aab2c8a1cbd1",
+          "menu_item_id": "fec28fce-0a5a-4739-87e7-b5d98e7ada46",
+          "product_name": "Pepián de Pollo Especial 2",
+          "quantity": 1,
+          "unit_price": 95,
+          "subtotal": 95
+        }
+      ],
+      "id": "73589886-0d75-40b2-872b-b94ac54a3d1b",
+      "client_id": "61836239-6f9a-4012-8206-47183c55cc72",
+      "restaurant_id": "8209e1cf-f337-4f0c-92c3-45aa753513cb",
+      "status": "RECHAZADA",
+      "total_amount": 266,
+      "created_at": "2026-02-13T23:00:45.000Z",
+      "updated_at": "2026-02-13T23:59:14.000Z",
+      "rejection_reason": ""
+    }
+  ],
+  "total": 10,
   "page": 1,
   "limit": 10
 }
@@ -1667,7 +1723,7 @@ Authorization: Bearer <token_admin>
 
 1. El cliente crea la orden → `CREADA`
 2. El restaurante la acepta → `EN_PROCESO`
-3. El restaurante la finaliza → `FINALIZADA`
+3. El restaurante la Lista → `LISTA`
 4. El cliente puede cancelarla antes de finalizar → `CANCELADA`
 5. El restaurante puede rechazarla → `RECHAZADA`
 
@@ -1799,6 +1855,35 @@ Authorization: Bearer <token_repartidor>
 ---
 
 ## 🔔 **NOTIFICATION**
+
+El user_id es el id del cliente que ha solicitado la orden no del usuario que ha iniciado sesión. También se tiene que llamar al endpoint "Obtener email de usuario a partir de id", esto ultimo solo aplica para el Rol de restaurante y de repartidor.
+
+POST http://localhost:4000/auth/users/email
+
+```json
+{
+  "userId": "4458ba71-be0f-4bb6-a43f-959d55ec8011"
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "email": "marta@gmail.com"
+}
+```
+
+### **Respuesta con errores:**
+
+```json
+{
+  "message": "Unauthorized",
+  "statusCode": 401
+}
+```
+
+---
 
 ### 1. **El cliente realiza un pedido** (Solo CLIENTE)
 
@@ -2016,7 +2101,7 @@ Authorization: Bearer <token_restaurante>
 
 ---
 
-### 6. **El restaurante cancela la orden** (Solo RESTAURANTE)
+### 6. **El restaurante rechaza la orden** (Solo RESTAURANTE)
 
 ```
 POST http://localhost:4000 /notifications/order-rejected

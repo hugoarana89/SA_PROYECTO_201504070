@@ -33,18 +33,17 @@ export const isAuthenticated = () => {
   return !!getAccessToken();
 };
 
-/*
-export const isAuthenticated = () => {
+export const isTokenExpired = (): boolean => {
   const token = getAccessToken();
-  if (!token) return false;
-
+  if (!token) return true;
   try {
     const { exp } = JSON.parse(atob(token.split(".")[1]));
-    return Date.now() / 1000 < exp;
+    // Margen de 30s para evitar expiración justo durante el fetch
+    return Date.now() / 1000 >= exp - 30;
   } catch {
-    return false;
+    return true;
   }
-};*/
+};
 
 // Función de logout actualizada para llamar al backend
 export const logout = async (): Promise<boolean> => {
