@@ -10,6 +10,7 @@ service AuthService {
   rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
   rpc GetAllUsers (Empty) returns (GetAllUsersResponse);
   rpc FindByRole (FindByRoleRequest) returns (GetAllUsersResponse);
+  rpc GetEmailByUserId (GetEmailByUserIdRequest) returns (GetEmailByUserIdResponse);
 }
 
 /* ======================
@@ -43,6 +44,10 @@ message FindByRoleRequest {
   string role = 1;
 }
 
+message GetEmailByUserIdRequest {
+  string userId = 1;
+}
+
 /* ======================
    RESPONSES
    ====================== */
@@ -71,6 +76,10 @@ message GetAllUsersResponse {
 
 message FindByRoleResponse {
   repeated UserResponse users = 1;
+}
+
+message GetEmailByUserIdResponse {
+  string email = 1;
 }
 
 /* ======================

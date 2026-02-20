@@ -201,4 +201,16 @@ export class AuthService {
       })),
     };
   }
+
+  // Obtiene el email de usuario a partir de su id
+  async getEmailByUserId(userId: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: 'Usuario no encontrado',
+      });
+    }
+    return { email: user.email };
+  }
 }

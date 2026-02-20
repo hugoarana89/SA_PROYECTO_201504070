@@ -283,6 +283,49 @@ Content-Type: application/json
 }
 ```
 
+
+
+
+
+
+
+
+
+### 3. **Obtener email de usuario a partir de id** (solo ADMINISTRADORES, RESTAURANTE, REPARTIDOR)
+
+```
+POST http://localhost:4000/auth/users/email
+Authorization: Bearer <token admin | restaurante | repartidor>
+Content-Type: application/json
+```
+
+### **Json a enviar:**
+
+```json
+{
+  "userId": "4458ba71-be0f-4bb6-a43f-959d55ec8011"
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "email": "marta@gmail.com"
+}
+```
+
+### **Respuesta con errores:**
+
+```json
+{
+  "message": "Unauthorized",
+  "statusCode": 401
+}
+```
+
+---
+
 # 👉 **RESTAURANT SERVICE**
 
 ## 📌 **ENDPOINTS DE RESTAURANT**
