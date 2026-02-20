@@ -10,7 +10,7 @@ import { Repository } from 'typeorm';
 
 import { Notification } from '../../../domain/entities/Notification';
 import { NotificationRepository } from '../../../domain/ports/NotificationRepository';
-import { NotificationEntity } from '../entities/Notificationentity';
+import { NotificationEntity } from '../entities/NotificationEntity';
 
 @Injectable()
 export class TypeOrmNotificationRepository implements NotificationRepository {
