@@ -78,13 +78,13 @@ const IncomingOrders: React.FC = () => {
     }
   };
 
-  const handleCompleteOrder = async (orderId: string, restaurantId: string) => {
+  const handleListOrder = async (orderId: string, restaurantId: string) => {
     try {
       setProcessingOrder(orderId);
-      await orderService.completeOrder(orderId, restaurantId);
+      await orderService.readyOrder(orderId, restaurantId);
       await loadOrders(); // Recargar órdenes después de completar
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al completar la orden');
+      setError(err instanceof Error ? err.message : 'Error al marcar la orden como lista');
     } finally {
       setProcessingOrder(null);
     }
@@ -281,7 +281,7 @@ const IncomingOrders: React.FC = () => {
 
                         {order.status === 'EN_PROCESO' && (
                           <button
-                            onClick={() => handleCompleteOrder(order.id, order.restaurant_id)}
+                            onClick={() => handleListOrder(order.id, order.restaurant_id)}
                             disabled={processingOrder === order.id}
                             className="inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                           >
@@ -290,7 +290,7 @@ const IncomingOrders: React.FC = () => {
                             ) : (
                               <>
                                 <CheckCircleIcon className="h-4 w-4 mr-1" />
-                                Completar
+                                Marcar como lista
                               </>
                             )}
                           </button>

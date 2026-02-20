@@ -158,7 +158,7 @@ export class OrderController {
    */
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMINISTRADOR, Role.RESTAURANTE, Role.CLIENTE)
+  @Roles(Role.ADMINISTRADOR, Role.RESTAURANTE, Role.CLIENTE, Role.REPARTIDOR)
   async getOrder(@Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.getOrder(id);
   }

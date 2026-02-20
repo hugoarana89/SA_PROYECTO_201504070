@@ -11,7 +11,6 @@ export function GrpcValidate(dtoClass: any, methodName?: string, serviceName: st
     GrpcMethod(serviceName, methodName),
     UsePipes({
       async transform(data: any, metadata: any) {
-        // Validar que los datos requeridos existen
         if (!data) {
           throw new RpcException({
             code: status.INVALID_ARGUMENT,
@@ -19,9 +18,22 @@ export function GrpcValidate(dtoClass: any, methodName?: string, serviceName: st
           });
         }
 
-        // Transformar y validar
-        const dtoInstance = plainToInstance(dtoClass, data);
-        const errors = await validate(dtoInstance);
+        // Crear una copia limpiando valores vacíos que deberían ser opcionales
+        const cleanedData = { ...data };
+        
+        // Convertir strings vacíos a undefined para propiedades opcionales
+        Object.keys(cleanedData).forEach(key => {
+          if (cleanedData[key] === '') {
+            cleanedData[key] = undefined;
+          }
+        });
+
+        const dtoInstance = plainToInstance(dtoClass, cleanedData);
+        const errors = await validate(dtoInstance, {
+          skipMissingProperties: false,
+          whitelist: true,
+          forbidNonWhitelisted: false,
+        });
         
         if (errors.length > 0) {
           const errorMessages = errors
@@ -35,7 +47,7 @@ export function GrpcValidate(dtoClass: any, methodName?: string, serviceName: st
             .join(', ');
           
           throw new RpcException({
-            code: status.INVALID_ARGUMENT, // 3 = INVALID_ARGUMENT
+            code: status.INVALID_ARGUMENT,
             message: `Error de validación: ${errorMessages}`,
           });
         }
