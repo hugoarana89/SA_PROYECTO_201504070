@@ -1,0 +1,17 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+COPY proto ./dist/proto
+
+RUN npm run build
+
+WORKDIR /app/dist/apps/notification-service
+
+EXPOSE 50055
+
+CMD ["node", "main.js"]

@@ -1,0 +1,17 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+COPY proto ./dist/proto
+
+RUN npm run build
+
+WORKDIR /app/dist/apps/delivery-service
+
+EXPOSE 50054
+
+CMD ["node", "main.js"]
