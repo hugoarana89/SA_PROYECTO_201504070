@@ -8,14 +8,14 @@ import { RefreshToken } from './refresh-token.entity';
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    
+
     // Inyecta el repositorio en modo lectura de User que se define user.entity.ts
-    private readonly userRepo: Repository<User>, 
+    private readonly userRepo: Repository<User>,
 
     // Inyecta el repositorio en modo lectura de RefreshToken que se define refresh-token.entity.ts
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepo: Repository<RefreshToken>,
-  ) {}
+  ) { }
 
   // Busca un usuario por su email
   findByEmail(email: string) {
@@ -32,36 +32,22 @@ export class UsersService {
     return this.userRepo.save(user);
   }
 
-  // Guarda un token de refresco en la base de datos
-  async saveRefreshToken(
-    user: User,
-    tokenHash: string,
-    expiresAt: Date,
-  ) {
-    const refreshToken = this.refreshTokenRepo.create({
-      user,
-      tokenHash,
-      expiresAt,
-    });
-
-    return this.refreshTokenRepo.save(refreshToken);
-  }
-
-  // Devolver todos los usuarios registrados
-  async findAll() {
-    return this.userRepo.find();
-  }
-
   // Devolver solo usuario con un Role específico
   async findByRole(role: string) {
     return this.userRepo.find({ where: { role: role as any } });
   }
 
-  
-  //Trae SOLO tokens válidos (no expirados y no revocados)
-  async findActiveRefreshTokens() {
-    return this.refreshTokenRepo.find({
+
+  // Guarda un token de refresco en la base de datos
+  async saveRefreshToken(user: User, selector: string, tokenHash: string, expiresAt: Date) {
+    const token = this.refreshTokenRepo.create({ user, selector, tokenHash, expiresAt });
+    return this.refreshTokenRepo.save(token);
+  }
+
+  async findRefreshTokenBySelector(selector: string): Promise<RefreshToken | null> {
+    return this.refreshTokenRepo.findOne({
       where: {
+        selector,
         revoked: false,
         expiresAt: MoreThan(new Date()),
       },
@@ -69,12 +55,26 @@ export class UsersService {
     });
   }
 
+  // Devolver todos los usuarios registrados
+  async findAll() {
+    return this.userRepo.find();
+  }
+
+
+  //Trae SOLO tokens válidos (no expirados y no revocados)
+  /*async findActiveRefreshTokens() {
+    return this.refreshTokenRepo.find({
+      where: {
+        revoked: false,
+        expiresAt: MoreThan(new Date()),
+      },
+      relations: ['user'],
+    });
+  }*/
+
   // Revoca un token de refresco específico
-  async revokeRefreshToken(tokenHash: string) {
-    await this.refreshTokenRepo.update(
-      { tokenHash },
-      { revoked: true },
-    );
+  async revokeRefreshToken(selector: string) {
+    await this.refreshTokenRepo.update({ selector }, { revoked: true });
   }
 
   // Revoca todos los tokens de refresco de un usuario específico, (este no lo estoy usando)

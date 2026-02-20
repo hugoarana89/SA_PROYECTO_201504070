@@ -422,6 +422,14 @@ Un administrador solo puede eliminar restaurantes que el ha creado, no puede eli
 DELETE http://localhost:4000/restaurants/:id_restaurant
 Authorization: Bearer <token_admin>
 ```
+
+### **Json a enviar:**
+```json
+{
+  "userIdRestaurant": "userPropietario del restaurante"
+}
+```
+
 ### **Respuesta exitosa:**
 ```json
 {}
@@ -439,7 +447,7 @@ Authorization: Bearer <token_admin>
 
 ### 4. **Obtener Restaurante por ID** (Público)
 ```
-GET http://localhost:4000/restaurants/:id_restaurant
+GET http://localhost:4000/restaurants/unique/:id_restaurant
 ```
 ### **Respuesta exitosa:**
 ```json
@@ -1439,6 +1447,66 @@ Content-Type: application/json
 
 ---
 
+### 7. **Cancelar Orden** (Solo RESTAURANTE)
+
+Permite al restaurante cancelar una orden siempre que no haya sido finalizada.
+
+```
+PUT http://localhost:4000/orders/:id/cancelRestaurant 
+Authorization: Bearer <token_restaurante>
+```
+### **Json a enviar:**
+
+```json
+{
+  "userId": "aec26fte-9d5a-9719-39e2-u5s28o7afa964"
+}
+```
+
+### **Respuesta exitosa:**
+
+```json
+{
+  "items": [
+    {
+      "id": "dbac833b-9439-4cf3-a7e4-f7bd37c5a7f4",
+      "menu_item_id": "fec28fce-0a5a-4739-87e7-b5d98e7ada46",
+      "product_name": "Pepián de Pollo Especial 2",
+      "quantity": 1,
+      "unit_price": 95,
+      "subtotal": 95
+    },
+    {
+      "id": "e6ec8c3a-b17e-441c-ad4f-7b2b1a93a0c5",
+      "menu_item_id": "9914aad2-5678-4c4d-b74b-23af4b40dd33",
+      "product_name": "Caldo de rez",
+      "quantity": 2,
+      "unit_price": 85.5,
+      "subtotal": 171
+    }
+  ],
+  "id": "f1200145-b692-4ba5-bd82-06d78c831b76",
+  "client_id": "61836239-6f9a-4012-8206-47183c55cc72",
+  "restaurant_id": "8209e1cf-f337-4f0c-92c3-45aa753513cb",
+  "status": "CANCELADA",
+  "total_amount": 266,
+  "created_at": "",
+  "updated_at": "2026-02-13T22:10:40.000Z",
+  "rejection_reason": ""
+}
+```
+
+### **Respuesta con errores:**
+
+```json
+{
+  "message": "Unauthorized",
+  "statusCode": 401
+}
+```
+
+---
+
 ### 8. **Completar Orden** (Solo RESTAURANTE)
 
 Una vez finalizada la preparación, el restaurante debe actualizar el estado a `FINALIZADA`.
@@ -1592,7 +1660,7 @@ Authorization: Bearer <token_restaurante>
 
 ---
 
-### 8. **Listar Todas las Órdenes** (Solo ADMINISTRADOR Y REPARTIDOR)
+### 9. **Listar Todas las Órdenes** (Solo ADMINISTRADOR Y REPARTIDOR)
 
 ```
 GET http://localhost:4000/orders?page=1&limit=10&status=CREADA
@@ -1675,7 +1743,7 @@ Authorization: Bearer <token_admin | token_repartidor>
 
 ---
 
-### 9. **Obtener Orden por ID** (ADMIN / RESTAURANTE / CLIENTE)
+### 10. **Obtener Orden por ID** (ADMIN / RESTAURANTE / CLIENTE)
 
 ```
 GET http://localhost:4000/orders/:id
@@ -1699,7 +1767,7 @@ Authorization: Bearer <token_valido>
 
 ---
 
-### 10. **Listar Órdenes de un Cliente Específico** (Solo ADMINISTRADOR)
+### 11. **Listar Órdenes de un Cliente Específico** (Solo ADMINISTRADOR)
 
 ```
 GET http://localhost:4000/orders/client/:clientId?page=1&limit=10&status=CREADA
@@ -1722,10 +1790,12 @@ Authorization: Bearer <token_admin>
 ## 📌 **FLUJO GENERAL DE UNA ORDEN**
 
 1. El cliente crea la orden → `CREADA`
-2. El restaurante la acepta → `EN_PROCESO`
-3. El restaurante la Lista → `LISTA`
-4. El cliente puede cancelarla antes de finalizar → `CANCELADA`
-5. El restaurante puede rechazarla → `RECHAZADA`
+2. El cliente puede cancelarla antes de procesar → `CANCELADA`
+3. El restaurante la puede rechazar → `RECHAZADA`
+4. El restaurante la acepta → `EN_PROCESO`
+5. El restaurante la puede cancelar → `CANCELADA`
+5. El restaurante la Lista → `LISTA`
+6. El repartidor entrega la orden → `FINALIZADA`
 
 ---
 
