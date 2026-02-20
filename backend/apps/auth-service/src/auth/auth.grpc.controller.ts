@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { Role } from '../common/enums/role.enum';
-import { FindByRoleDto } from './dto/user.dto';
+import { FindByRoleDto, GetEmailByUserIdDto } from './dto/user.dto';
 import { GrpcValidate } from '../common/decorators/grpc-validate.decorator';
 import {
   ValidateTokenDto,
@@ -62,5 +62,11 @@ export class AuthGrpcController {
   @GrpcValidate(FindByRoleDto, 'FindByRole')
   findByRole(@Payload() data: FindByRoleDto) {
     return this.authService.findByRole(data.role as Role);
+  }
+
+  // Obtener el email de usuario a partir de su id
+  @GrpcValidate(GetEmailByUserIdDto, 'GetEmailByUserId')
+  getEmailByUserId(@Payload() data: GetEmailByUserIdDto) {
+    return this.authService.getEmailByUserId(data.userId);
   }
 }

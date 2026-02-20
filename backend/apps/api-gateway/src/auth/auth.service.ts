@@ -98,6 +98,17 @@ export class AuthService implements OnModuleInit {
     }
   }
 
+  // Obtener el email de usuario a partir de su id
+  async getEmailByUserId(id: string) {
+    try {
+      return await lastValueFrom(
+        from(this.authGrpc.GetEmailByUserId({ userId: id })),
+      );
+    } catch (error: any) {
+      this.handleGrpcError(error);
+    }
+  }
+
   // maneja los errores gRPC y los convierte en excepciones HTTP
   private handleGrpcError(error: any): never {
     switch (error.code) {

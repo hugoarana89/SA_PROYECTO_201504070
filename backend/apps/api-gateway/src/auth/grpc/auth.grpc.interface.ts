@@ -39,4 +39,8 @@ export interface AuthGrpcService {
       role: string;
     }>;
   }>;
+
+  GetEmailByUserId(data: { userId: string }): Promise<{
+    email: string;
+  }>;
 }
