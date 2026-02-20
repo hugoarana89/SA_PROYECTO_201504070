@@ -65,9 +65,10 @@ export const restaurantService = {
   },
 
   // Eliminar restaurante (solo ADMIN)
-  async deleteRestaurant(id: string): Promise<void> {
+  async deleteRestaurant(id: string, userIdRestaurant: string): Promise<void> {
     const response = await authFetch(`${API_URL}/restaurants/${id}`, {
       method: 'DELETE',
+      body: JSON.stringify({ userIdRestaurant }),
     });
 
     if (!response.ok) {

@@ -99,7 +99,14 @@ const AdminRestaurants: React.FC = () => {
     if (!window.confirm('¿Estás seguro de eliminar este restaurante?')) return;
     
     try {
-      await restaurantService.deleteRestaurant(id);
+      const result = await restaurantService.getRestaurantById(id);
+
+      if (!result) {
+        setError('Restaurante no encontrado');
+        return;
+      }
+
+      await restaurantService.deleteRestaurant(id, result.owner_id);
       loadRestaurants();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al eliminar restaurante');

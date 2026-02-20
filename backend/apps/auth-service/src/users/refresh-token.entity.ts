@@ -1,12 +1,5 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  CreateDateColumn,
-  UpdateDateColumn,
-  Index,
-} from 'typeorm';
+// refresh-token.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { User } from './user.entity';
 
 @Entity('refresh_tokens')
@@ -14,19 +7,19 @@ export class RefreshToken {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, (user) => user.refreshTokens, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   user: User;
 
-  @Column({ name: 'token_hash', type: 'varchar', length: 255 })
-  @Index('idx_token_hash')
+  @Column({ name: 'token_hash' })
   tokenHash: string;
 
-  @Column({ name: 'expires_at', type: 'datetime' })
+  @Column({ unique: true, nullable: true }) // nullable para tokens viejos
+  selector: string;
+
+  @Column({ name: 'expires_at' })
   expiresAt: Date;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ default: false })
   revoked: boolean;
 
   @CreateDateColumn({ name: 'created_at' })

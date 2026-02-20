@@ -39,95 +39,75 @@ export class AuthService {
   // Login de usuario
   async login(email: string, password: string) {
     const user = await this.usersService.findByEmail(email);
-    if (!user) {
-      throw new RpcException({
-        code: status.UNAUTHENTICATED,
-        message: 'Credenciales inválidas',
-      });
-    }
+    if (!user) throw new RpcException({ code: status.UNAUTHENTICATED, message: 'Credenciales inválidas' });
 
     const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) {
-      throw new RpcException({
-        code: status.UNAUTHENTICATED,
-        message: 'Credenciales inválidas',
-      });
-    }
+    if (!valid) throw new RpcException({ code: status.UNAUTHENTICATED, message: 'Credenciales inválidas' });
 
     const accessToken = jwt.sign(
       { sub: user.id, email: user.email, role: user.role },
       this.JWT_SECRET,
-      { expiresIn: '15m' },
+      { expiresIn: '60m' },
     );
 
-    const refreshToken = randomBytes(64).toString('hex');
-    const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+    // Nuevo formato selector.verifier
+    const selector = randomBytes(16).toString('hex');
+    const verifier = randomBytes(48).toString('hex');
+    const verifierHash = await bcrypt.hash(verifier, 10);
+    const refreshToken = `${selector}.${verifier}`;
 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    // Guarda el token de refresco en la base de datos
-    // usando el método de users.service.ts
-    await this.usersService.saveRefreshToken(
-      user,
-      refreshTokenHash,
-      expiresAt,
-    );
+    await this.usersService.saveRefreshToken(user, selector, verifierHash, expiresAt);
 
-    return {
-      accessToken,
-      refreshToken,
-    };
+    return { accessToken, refreshToken };
   }
 
   // sirve para refrescar tokens
-
   async refreshToken(refreshToken: string) {
-    const tokens = await this.usersService.findActiveRefreshTokens();
-
-    for (const token of tokens) {
-      const match = await bcrypt.compare(
-        refreshToken,
-        token.tokenHash,
-      );
-
-      if (!match) continue;
-
-      // 🔁 ROTACIÓN: invalidamos el token actual
-      await this.usersService.revokeRefreshToken(token.tokenHash);
-
-      const newAccessToken = jwt.sign(
-        {
-          sub: token.user.id,
-          email: token.user.email,
-          role: token.user.role,
-        },
-        this.JWT_SECRET,
-        { expiresIn: '15m' },
-      );
-
-      const newRefreshToken = randomBytes(64).toString('hex');
-      const newRefreshTokenHash = await bcrypt.hash(newRefreshToken, 10);
-
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7);
-
-      await this.usersService.saveRefreshToken(
-        token.user,
-        newRefreshTokenHash,
-        expiresAt,
-      );
-
-      return {
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-      };
+    const dotIndex = refreshToken.indexOf('.');
+    if (dotIndex === -1) {
+      throw new RpcException({ code: status.UNAUTHENTICATED, message: 'Refresh token inválido' });
     }
 
-    throw new RpcException({
-      code: status.UNAUTHENTICATED,
-      message: 'Refresh token inválido o expirado',
-    });
+    const selector = refreshToken.slice(0, dotIndex);
+    const verifier = refreshToken.slice(dotIndex + 1);
+
+    // Lookup directo — O(1)
+    const token = await this.usersService.findRefreshTokenBySelector(selector);
+
+    if (!token) {
+      throw new RpcException({ code: status.UNAUTHENTICATED, message: 'Refresh token inválido o expirado' });
+    }
+
+    // bcrypt solo una vez, sobre un único registro
+    const match = await bcrypt.compare(verifier, token.tokenHash);
+    if (!match) {
+      throw new RpcException({ code: status.UNAUTHENTICATED, message: 'Refresh token inválido' });
+    }
+
+    // Rotar: invalidar el actual
+    await this.usersService.revokeRefreshToken(token.selector);
+
+    // Generar nuevo par
+    const newSelector = randomBytes(16).toString('hex');
+    const newVerifier = randomBytes(48).toString('hex');
+    const newVerifierHash = await bcrypt.hash(newVerifier, 10);
+    const newRefreshToken = `${newSelector}.${newVerifier}`;
+
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    await this.usersService.saveRefreshToken(token.user, newSelector, newVerifierHash, expiresAt);
+
+    const newAccessToken = jwt.sign(
+      { sub: token.user.id, email: token.user.email, role: token.user.role },
+      this.JWT_SECRET,
+      { expiresIn: '60m' },
+    );
+
+    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }
 
   // Valida un token JWT
@@ -147,22 +127,27 @@ export class AuthService {
 
   // logout de usuario
   async logout(refreshToken: string) {
-    const tokens = await this.usersService.findActiveRefreshTokens();
-    for (const token of tokens) {
-      const match = await bcrypt.compare(
-        refreshToken,
-        token.tokenHash,
-      );
-      if (match) {
-        // se llama al método para revocar el token que esta en users.service.ts
-        await this.usersService.revokeRefreshToken(token.tokenHash);
-        return { success: true };
-      }
+    const dotIndex = refreshToken.indexOf('.');
+    if (dotIndex === -1) {
+      throw new RpcException({ code: status.UNAUTHENTICATED, message: 'Refresh token inválido' });
     }
-    throw new RpcException({
-      code: status.UNAUTHENTICATED,
-      message: 'Refresh token inválido o expirado',
-    });
+
+    const selector = refreshToken.slice(0, dotIndex);
+    const verifier = refreshToken.slice(dotIndex + 1);
+
+    const token = await this.usersService.findRefreshTokenBySelector(selector);
+
+    if (!token) {
+      throw new RpcException({ code: status.UNAUTHENTICATED, message: 'Refresh token inválido o expirado' });
+    }
+
+    const match = await bcrypt.compare(verifier, token.tokenHash);
+    if (!match) {
+      throw new RpcException({ code: status.UNAUTHENTICATED, message: 'Refresh token inválido' });
+    }
+
+    await this.usersService.revokeRefreshToken(token.selector);
+    return { success: true };
   }
 
   // Obtiene todos los usuarios (solo para administradores)

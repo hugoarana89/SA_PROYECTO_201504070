@@ -19,6 +19,7 @@ CREATE TABLE refresh_tokens (
     id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
     user_id VARCHAR(36) NOT NULL,
     token_hash VARCHAR(255) NOT NULL,
+    selector VARCHAR(32) UNIQUE NULL,
     expires_at DATETIME NOT NULL,
     revoked BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -31,9 +32,17 @@ CREATE TABLE refresh_tokens (
 
     INDEX idx_user_id (user_id),
     INDEX idx_token_hash (token_hash),
+    INDEX idx_selector (selector),
     INDEX idx_expires_at (expires_at)
 );
 
+-- Insertar usuario administrador por defecto
+INSERT INTO users (email, password_hash, role) 
+VALUES (
+    'admin@admin.com', 
+    '$2b$10$L9pWAdTnvrT5kJGJJGzug.gpzP8cHl6/llxW6sig2opN7DdZYb8/6', 
+    'ADMINISTRADOR'
+);
 
 -- Database: restaurant_db
 CREATE DATABASE IF NOT EXISTS restaurant_db;

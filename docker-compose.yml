@@ -61,6 +61,46 @@ services:
       retries: 10
 
   # =============================
+  # DELIVERY DATABASE
+  # =============================
+  mysql-delivery:
+    image: mysql:8.0
+    container_name: mysql-delivery
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 201504070
+      MYSQL_DATABASE: delivery_db
+    ports:
+      - "3310:3306"
+    volumes:
+      - mysql_delivery_data:/var/lib/mysql
+      - ./backend/sql/init-delivery.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+
+  # =============================
+  # NOTIFICATION DATABASE
+  # =============================
+  mysql-notification:
+    image: mysql:8.0
+    container_name: mysql-notification
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 201504070
+      MYSQL_DATABASE: notification_db
+    ports:
+      - "3311:3306"
+    volumes:
+      - mysql_notification_data:/var/lib/mysql
+      - ./backend/sql/init-notification.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+
+  # =============================
   # AUTH SERVICE
   # =============================
   auth-service:
@@ -118,6 +158,42 @@ services:
       - "50053:50053"
 
   # =============================
+  # DELIVERY SERVICE
+  # =============================
+  delivery-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.delivery-service
+    container_name: delivery-service
+    env_file:
+      - ./backend/.env
+    environment:
+      DB_HOST: mysql-delivery
+    depends_on:
+      mysql-delivery:
+        condition: service_healthy
+    ports:
+      - "50054:50054"
+
+  # =============================
+  # NOTIFICATION SERVICE
+  # =============================
+  notification-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.notification-service
+    container_name: notification-service
+    env_file:
+      - ./backend/.env
+    environment:
+      DB_HOST: mysql-notification
+    depends_on:
+      mysql-notification:
+        condition: service_healthy
+    ports:
+      - "50055:50055"
+
+  # =============================
   # API GATEWAY
   # =============================
   api-gateway:
@@ -131,10 +207,14 @@ services:
       AUTH_SERVICE_URL: auth-service:50051
       RESTAURANT_SERVICE_URL: restaurant-service:50052
       ORDER_SERVICE_URL: order-service:50053
+      DELIVERY_SERVICE_URL: delivery-service:50054
+      NOTIFICATION_SERVICE_URL: notification-service:50055
     depends_on:
       - auth-service
       - restaurant-service
       - order-service
+      - delivery-service
+      - notification-service
     ports:
       - "4000:4000"
 
@@ -154,3 +234,5 @@ volumes:
   mysql_auth_data:
   mysql_restaurant_data:
   mysql_order_data:
+  mysql_delivery_data:
+  mysql_notification_data:

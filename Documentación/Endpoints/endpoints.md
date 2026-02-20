@@ -422,6 +422,14 @@ Un administrador solo puede eliminar restaurantes que el ha creado, no puede eli
 DELETE http://localhost:4000/restaurants/:id_restaurant
 Authorization: Bearer <token_admin>
 ```
+
+### **Json a enviar:**
+```json
+{
+  "userIdRestaurant": "userPropietario del restaurante"
+}
+```
+
 ### **Respuesta exitosa:**
 ```json
 {}
@@ -439,7 +447,7 @@ Authorization: Bearer <token_admin>
 
 ### 4. **Obtener Restaurante por ID** (Público)
 ```
-GET http://localhost:4000/restaurants/:id_restaurant
+GET http://localhost:4000/restaurants/unique/:id_restaurant
 ```
 ### **Respuesta exitosa:**
 ```json

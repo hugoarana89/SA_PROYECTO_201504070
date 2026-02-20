@@ -42,7 +42,7 @@ const getClientInfo = (): { email: string; name: string } => {
 };
 
 // Para almacenar las órdenes que ya fueron notificadas
-const notifiedOrders = new Set<string>();
+//const notifiedOrders = new Set<string>();
 
 const MyOrders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);

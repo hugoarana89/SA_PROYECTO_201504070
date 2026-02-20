@@ -44,8 +44,8 @@ export class RestaurantController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMINISTRADOR)
-  async deleteRestaurant(@Param('id') id: string, @Request() req) {
-    return this.restaurantService.deleteRestaurant(id, req.user.userId);
+  async deleteRestaurant(@Param('id') id: string, @Body('userIdRestaurant') userIdRestaurant: string) {
+    return this.restaurantService.deleteRestaurant(id, userIdRestaurant);
   }
 
   /**

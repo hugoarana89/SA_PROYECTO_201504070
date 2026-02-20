@@ -1,9 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as menuItemRepositoryInterface from '../../../domain/ports/menu-item.repository.interface';
 import * as restaurantRepositoryInterface from '../../../domain/ports/restaurant.repository.interface';
-import { ValidationResult } from '../../../domain/ports/validation-result.interface';
-import { MenuItem } from '../../../domain/entities/menu-item.entity';
-import { RestaurantNotFoundException, MenuItemNotFoundException } from '../../../domain/exceptions/domain.exceptions';
+import { RestaurantNotFoundException } from '../../../domain/exceptions/domain.exceptions';
 
 export interface OrderItemValidationRequest {
   menuItemId: string;
