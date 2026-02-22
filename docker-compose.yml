@@ -55,10 +55,9 @@ services:
       - mysql_order_data:/var/lib/mysql
       - ./backend/sql/init-order.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD", "mysql", "-u", "root", "-p201504070", "-e", "SELECT 1"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
 
   # =============================
   # DELIVERY DATABASE
