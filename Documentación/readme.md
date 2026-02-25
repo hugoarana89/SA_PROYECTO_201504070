@@ -244,21 +244,21 @@ El pipeline de CI/CD debe automatizar el proceso desde el commit hasta el despli
 ### Diagrama de Arquitectura de alto nivel
 
 <div align="center">
-  <img src="Diagramas/diagrama-de-arquitectura.jpg" alt="ERD" width="500">
+  <img src="Diagramas/diagrama-de-arquitectura.jpg" alt="ERD" width="1000">
   <p><i>Figura 2: Diagrama de arquitectura de alto nivel</i></p>
 </div>
 
 ### Diagrama de despliegue
 
 <div align="center">
-  <img src="Diagramas/diagrama-de-despliegue.png" alt="ERD" width="500">
+  <img src="Diagramas/diagrama-de-despliegue.png" alt="ERD" width="1000">
   <p><i>Figura 3: Diagrama de despliegue</i></p>
 </div>
 
 ### Diagrama de actividades
 
 <div align="center">
-  <img src="Diagramas/diagrama-de-actividades.png" alt="ERD" width="500">
+  <img src="Diagramas/diagrama-de-actividades.png" alt="ERD" width="1000">
   <p><i>Figura 4: Diagrama de actividades</i></p>
 </div>
 
