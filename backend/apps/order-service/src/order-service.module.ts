@@ -24,6 +24,9 @@ import { RestaurantCatalogGrpcClient } from './infrastructure/grpc/clients/resta
 // Domain Ports
 import { ORDER_REPOSITORY } from './domain/ports/order.repository.interface';
 import { RESTAURANT_CATALOG_CLIENT } from './domain/ports/restaurant-catalog.client.interface';
+import { RabbitMQService } from './rabbitmq/rabbitmq';
+
+
 
 @Module({
   imports: [
@@ -38,7 +41,7 @@ import { RESTAURANT_CATALOG_CLIENT } from './domain/ports/restaurant-catalog.cli
         transport: Transport.GRPC,
         options: {
           package: 'restaurant_catalog',
-          protoPath: process.env.NODE_ENV === 'production' 
+          protoPath: process.env.NODE_ENV === 'production'
             ? join(__dirname, '../../proto/restaurant_catalog.proto')
             : join(process.cwd(), 'proto/restaurant_catalog.proto'),
           url: process.env.RESTAURANT_SERVICE_URL || '0.0.0.0:50052',
@@ -50,6 +53,14 @@ import { RESTAURANT_CATALOG_CLIENT } from './domain/ports/restaurant-catalog.cli
           },
         },
       },
+      {
+        name: 'PEDIDOS_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
+          queue: 'cola_pedidos',
+        },
+      },
     ]),
   ],
   controllers: [OrderGrpcController],
@@ -59,13 +70,16 @@ import { RESTAURANT_CATALOG_CLIENT } from './domain/ports/restaurant-catalog.cli
       provide: ORDER_REPOSITORY,
       useClass: TypeOrmOrderRepository,
     },
-    
+
     // gRPC Clients
     {
       provide: RESTAURANT_CATALOG_CLIENT,
       useClass: RestaurantCatalogGrpcClient,
     },
-    
+
+    // RabbitMQ Service
+    RabbitMQService,
+
     // Use Cases
     CreateOrderUseCase,
     CancelOrderUseCase,
@@ -77,4 +91,4 @@ import { RESTAURANT_CATALOG_CLIENT } from './domain/ports/restaurant-catalog.cli
     ListOrdersUseCase,
   ],
 })
-export class OrderServiceModule {}
+export class OrderServiceModule { }
