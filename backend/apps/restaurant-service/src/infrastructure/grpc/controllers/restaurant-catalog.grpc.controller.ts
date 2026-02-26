@@ -1,5 +1,5 @@
 import { Controller, Logger } from '@nestjs/common';
-import { GrpcMethod, Payload } from '@nestjs/microservices';
+import { Payload, MessagePattern, Ctx, RmqContext } from '@nestjs/microservices';
 import { GrpcValidate } from '../../../common/decorators/grpc-validate.decorator';
 
 // Use Cases
@@ -109,6 +109,19 @@ export class RestaurantCatalogGrpcController {
     }
   }
 
+  @MessagePattern('pedido_creado')
+  handlePedido(@Payload() data: any, @Ctx() context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    console.log('Procesando pedido de RabbitMQ...', data);
+
+    // IMPORTANTE: Confirmar el mensaje manualmente
+    channel.ack(originalMsg);
+  }
+
+
+
   /* ======================
      MÉTODOS DE RESTAURANTES
      ====================== */
@@ -180,7 +193,7 @@ export class RestaurantCatalogGrpcController {
   @GrpcValidate(ListRestaurantsByOwnerDto, 'ListRestaurantsByOwner')
   async listRestaurantsByOwner(@Payload() data: ListRestaurantsByOwnerDto) {
     const result = await this.listRestaurantsByOwnerUseCase.execute(data.owner_id);
-    
+
     return {
       restaurants: result.map(item => this.mapRestaurantToResponse(item)),
     };

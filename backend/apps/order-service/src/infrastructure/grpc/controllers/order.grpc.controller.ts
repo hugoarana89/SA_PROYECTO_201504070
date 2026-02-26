@@ -11,6 +11,7 @@ import { ReadyOrderUseCase } from '../../../application/usecases/ready-order.use
 import { CompleteOrderUseCase } from '../../../application/usecases/complete-order.usecase';
 import { GetOrderUseCase } from '../../../application/usecases/get-order.usecase';
 import { ListOrdersUseCase } from '../../../application/usecases/list-orders.usecase';
+import { RabbitMQService } from 'apps/order-service/src/rabbitmq/rabbitmq';
 
 // DTOs
 import {
@@ -39,6 +40,7 @@ export class OrderGrpcController {
     private readonly completeOrderUseCase: CompleteOrderUseCase,
     private readonly getOrderUseCase: GetOrderUseCase,
     private readonly listOrdersUseCase: ListOrdersUseCase,
+    private readonly rabbitMQService: RabbitMQService,
   ) { }
 
   @GrpcValidate(CreateOrderRequestDto, 'CreateOrder')
@@ -47,7 +49,7 @@ export class OrderGrpcController {
       `📤 Recibida solicitud de creación de orden para cliente 
       ${data.client_id} en restaurante ${data.restaurant_id} con ${data.items.length} items`,
     );
-    const result = await this.createOrderUseCase.execute({
+    /*const result = await this.createOrderUseCase.execute({
       clientId: data.client_id,
       restaurantId: data.restaurant_id,
       items: data.items.map((item) => ({
@@ -56,8 +58,20 @@ export class OrderGrpcController {
         price: item.price,
         productName: item.product_name,
       })),
-    });
+    });*/
 
+    const result = {
+      id: '123',
+      client_id: data.client_id,
+      restaurant_id: data.restaurant_id,
+      items: data.items.map((item) => ({
+        menuItemId: item.menu_item_id,
+        quantity: item.quantity,
+        price: item.price,
+        productName: item.product_name,
+      })),
+    }
+    this.rabbitMQService.enviarPedido(result);
     return this.mapOrderToResponse(result);
   }
 
