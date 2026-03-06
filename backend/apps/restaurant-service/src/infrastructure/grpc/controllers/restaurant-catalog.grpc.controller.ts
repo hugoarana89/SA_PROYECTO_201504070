@@ -109,6 +109,7 @@ export class RestaurantCatalogGrpcController {
     }
   }
 
+  //metodo para recibir mensajes de RabbitMQ (si se decide implementar)
   @MessagePattern('pedido_creado')
   handlePedido(@Payload() data: any, @Ctx() context: RmqContext) {
     const channel = context.getChannelRef();

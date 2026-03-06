@@ -24,7 +24,7 @@ import { RestaurantCatalogGrpcClient } from './infrastructure/grpc/clients/resta
 // Domain Ports
 import { ORDER_REPOSITORY } from './domain/ports/order.repository.interface';
 import { RESTAURANT_CATALOG_CLIENT } from './domain/ports/restaurant-catalog.client.interface';
-import { RabbitMQService } from './rabbitmq/rabbitmq';
+//import { RabbitMQService } from './rabbitmq/rabbitmq';
 
 
 
@@ -53,14 +53,14 @@ import { RabbitMQService } from './rabbitmq/rabbitmq';
           },
         },
       },
-      {
+      /*{
         name: 'PEDIDOS_SERVICE',
         transport: Transport.RMQ,
         options: {
           urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
           queue: 'cola_pedidos',
         },
-      },
+      },*/
     ]),
   ],
   controllers: [OrderGrpcController],
@@ -78,7 +78,7 @@ import { RabbitMQService } from './rabbitmq/rabbitmq';
     },
 
     // RabbitMQ Service
-    RabbitMQService,
+    // RabbitMQService,
 
     // Use Cases
     CreateOrderUseCase,

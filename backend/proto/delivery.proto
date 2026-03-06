@@ -23,6 +23,7 @@ message Delivery {
   string assigned_at      = 5;
   string delivered_at     = 6;
   string cancel_reason    = 7;
+  string proof_image_url  = 8;
 }
 
 // AcceptOrder
@@ -37,9 +38,10 @@ message AcceptOrderResponse {
 
 // UpdateDeliveryStatus
 message UpdateDeliveryStatusRequest {
-  string         delivery_id   = 1;
-  DeliveryStatus status        = 2;
-  string         cancel_reason = 3; // solo si status = CANCELADA
+  string         delivery_id    = 1;
+  DeliveryStatus status         = 2;
+  string         cancel_reason  = 3; // solo si status = CANCELADA
+  string         proof_image_url = 4; // obligatorio si status = ENTREGADA
 }
 
 message UpdateDeliveryStatusResponse {
@@ -57,7 +59,7 @@ message GetDeliveryResponse {
 
 // ListDeliveries — filtrado por repartidor y opcionalmente por status
 message ListDeliveriesRequest {
-  string delivery_user_id = 1; // ID del repartidor autenticado
+  string delivery_user_id = 1;
   string status_filter    = 2; // "EN_CAMINO" | "ENTREGADA" | "CANCELADA" | "" (todas)
   int32  page             = 3;
   int32  limit            = 4;

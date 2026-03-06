@@ -27,6 +27,7 @@ async function bootstrap() {
     },
   });
 
+  /*
   // 3. Conectamos el Microservicio RabbitMQ
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
@@ -38,7 +39,7 @@ async function bootstrap() {
         durable: true, // Recomendado para que la cola sobreviva a reinicios de RabbitMQ
       },
     },
-  });
+  });*/
 
   // Filtros globales
   app.useGlobalFilters(new GrpcValidationExceptionFilter());

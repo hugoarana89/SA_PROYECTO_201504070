@@ -14,8 +14,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as microservices from '@nestjs/microservices';
-import { status }        from '@grpc/grpc-js';
-import { lastValueFrom } from 'rxjs';
+import { status }         from '@grpc/grpc-js';
+import { lastValueFrom }  from 'rxjs';
 
 import {
   DeliveryGrpcService,
@@ -41,10 +41,6 @@ export class DeliveryService implements OnModuleInit {
   }
 
   // ── AcceptOrder ───────────────────────────────────────────
-  /**
-   * El repartidor acepta una orden marcada como LISTA.
-   * delivery_user_id viene del JWT, no del body.
-   */
   async acceptOrder(data: AcceptOrderRequest): Promise<{ delivery: Delivery }> {
     try {
       return await lastValueFrom(this.deliveryGrpc.acceptOrder(data));
@@ -55,8 +51,8 @@ export class DeliveryService implements OnModuleInit {
 
   // ── UpdateDeliveryStatus ──────────────────────────────────
   /**
-   * Actualiza el estado de una entrega: ENTREGADA o CANCELADA.
-   * El deliveryId viene del param de la ruta (/delivery/:deliveryId/status).
+   * Actualiza el estado de una entrega.
+   * Para ENTREGADA es obligatorio enviar proof_image_url con la foto en base64.
    */
   async updateDeliveryStatus(
     data: UpdateDeliveryStatusRequest,
@@ -78,15 +74,11 @@ export class DeliveryService implements OnModuleInit {
   }
 
   // ── ListDeliveries ────────────────────────────────────────
-  /**
-   * Lista las entregas del repartidor autenticado.
-   * Filtro opcional por status: EN_CAMINO | ENTREGADA | CANCELADA | (todas)
-   */
   async listDeliveries(
     deliveryUserId: string,
-    statusFilter: DeliveryStatusFilter | undefined,
-    page: number,
-    limit: number,
+    statusFilter:   DeliveryStatusFilter | undefined,
+    page:           number,
+    limit:          number,
   ) {
     const request: ListDeliveriesRequest = {
       delivery_user_id: deliveryUserId,

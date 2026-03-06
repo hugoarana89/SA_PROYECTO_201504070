@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   TruckIcon,
   CheckCircleIcon,
@@ -7,6 +7,8 @@ import {
   EyeIcon,
   ArchiveBoxIcon,
   ExclamationTriangleIcon,
+  PhotoIcon,
+  CameraIcon,
 } from '@heroicons/react/24/outline';
 import { orderService } from '../../services/order.service';
 import { deliveryService } from '../../services/delivery.service';
@@ -24,6 +26,7 @@ const statusConfig = {
 };
 
 const ActiveDelivery: React.FC = () => {
+  const [showImageModal, setShowImageModal] = useState(false);
   const [activeDeliveries, setActiveDeliveries] = useState<DeliveryItem[]>([]);
   const [historyDeliveries, setHistoryDeliveries] = useState<DeliveryItem[]>([]);
   const [orderMap, setOrderMap] = useState<Record<string, Order>>({});
@@ -41,6 +44,13 @@ const ActiveDelivery: React.FC = () => {
   const [selectedDelivery, setSelectedDelivery] = useState<DeliveryItem | null>(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [modalOrder, setModalOrder] = useState<Order | null>(null);
+  const [selectedImageDelivery, setSelectedImageDelivery] = useState<DeliveryItem | null>(null);
+  const [proofImage, setProofImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showProofModal, setShowProofModal] = useState(false);
+  const [proofImageUrl, setProofImageUrl] = useState<string>('');
 
   const currentUser = getUser();
   const LIMIT = 5;
@@ -91,40 +101,95 @@ const ActiveDelivery: React.FC = () => {
     loadData();
   }, [loadData]);
 
-  const handleMarkDelivered = async (delivery: DeliveryItem) => {
-    const order = orderMap[delivery.order_id];
-    try {
-      setProcessingId(delivery.id);
-      setError(null);
+  // Nueva función para abrir el modal de imagen
+  const openImageModal = (delivery: DeliveryItem) => {
+    setSelectedImageDelivery(delivery);
+    setProofImage(null);
+    setImagePreview(null);
+    setShowImageModal(true);
+  };
 
-      // Obtengo el id del restaurante para completar la orden en el sistema de órdenes
-      const getOrderById = await orderService.getOrderById(delivery.order_id);
-      if (!getOrderById) {
-        throw new Error('Orden no encontrada');
+  // Manejar selección de imagen
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        setError('Por favor selecciona una imagen válida');
+        return;
+      }
+      // Validar tamaño (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('La imagen no debe superar los 5MB');
+        return;
       }
 
-      // Ya teniendo el id del restaurante, completo la orden en la base de datos de órdenes
-      const result = await orderService.completeOrder(order.id, getOrderById.restaurant_id);
-      if (!result) {
+      setProofImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Nueva función para manejar la entrega con imagen
+  const handleMarkDeliveredWithImage = async () => {
+    if (!selectedImageDelivery || !proofImage) {
+      setError('Debes seleccionar una imagen de comprobante');
+      return;
+    }
+
+    const order = orderMap[selectedImageDelivery.order_id];
+    if (!order) {
+      setError('Orden no encontrada');
+      return;
+    }
+
+    try {
+      setProcessingId(selectedImageDelivery.id);
+      setUploadingImage(true);
+      setError(null);
+
+      // 1. Convertir la imagen a base64
+      const base64Image = await deliveryService.fileToBase64(proofImage);
+
+      // 2. Completar la orden en el sistema de órdenes
+      const orderResult = await orderService.completeOrder(order.id, order.restaurant_id);
+      if (!orderResult) {
         throw new Error('Error al completar la orden en el sistema de órdenes');
       }
 
-      // Completar la orden en la base de datos de deliverys
-      if (order) {
-        const result = await deliveryService.updateStatus(delivery.id, { status: 2, cancel_reason: '' });
-        if (!result) {
-          throw new Error('Error al marcar la entrega como entregada');
-        }
+      // 3. Actualizar el estado de la entrega con la imagen en base64
+      const deliveryResult = await deliveryService.updateStatus(selectedImageDelivery.id, {
+        status: 2,
+        cancel_reason: '',
+        proof_image_url: base64Image // Enviar la imagen en base64
+      });
+
+      if (!deliveryResult) {
+        throw new Error('Error al marcar la entrega como entregada');
       }
 
-      setSuccessMsg('¡Entrega marcada como completada!');
+      // Cerrar modal y limpiar estado
+      setShowImageModal(false);
+      setSelectedImageDelivery(null);
+      setProofImage(null);
+      setImagePreview(null);
+
+      setSuccessMsg('¡Entrega marcada como completada con comprobante!');
       setTimeout(() => setSuccessMsg(null), 4000);
       await loadData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al marcar como entregada');
+      setError(err instanceof Error ? err.message : 'Error al procesar la entrega');
     } finally {
       setProcessingId(null);
+      setUploadingImage(false);
     }
+  };
+
+  const handleMarkDelivered = (delivery: DeliveryItem) => {
+    openImageModal(delivery);
   };
 
   const openCancelModal = (delivery: DeliveryItem) => {
@@ -140,6 +205,12 @@ const ActiveDelivery: React.FC = () => {
     try {
       setProcessingId(selectedDelivery.id);
       setError(null);
+
+      // Completar la orden en el sistema de órdenes
+      const orderResult = await orderService.completeOrder(order.id, order.restaurant_id);
+      if (!orderResult) {
+        throw new Error('Error al completar la orden en el sistema de órdenes');
+      }
 
       await deliveryService.updateStatus(selectedDelivery.id, {
         status: 3,
@@ -186,6 +257,11 @@ const ActiveDelivery: React.FC = () => {
     }
   };
 
+  // Función para abrir el modal de visualización de comprobante
+  const openProofModal = (imageUrl: string) => {
+    setProofImageUrl(imageUrl);
+    setShowProofModal(true);
+  };
   const formatDate = (dateString: string) => {
     if (!dateString) return '—';
     return new Date(dateString).toLocaleDateString('es-GT', {
@@ -203,7 +279,7 @@ const ActiveDelivery: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+        {/* Header - sin cambios */}
         <div className="md:flex md:items-center md:justify-between mb-8">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600 shadow-lg">
@@ -418,6 +494,15 @@ const ActiveDelivery: React.FC = () => {
                                     <StatusIcon className="mr-1 h-3.5 w-3.5" />
                                     {cfg.label}
                                   </span>
+                                  {delivery.proof_image_url && delivery.status === 'ENTREGADA' && (
+                                    <button
+                                      onClick={() => openProofModal(delivery.proof_image_url!)}
+                                      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                                    >
+                                      <PhotoIcon className="mr-1 h-3.5 w-3.5" />
+                                      Ver comprobante
+                                    </button>
+                                  )}
                                 </div>
 
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-500">
@@ -464,6 +549,54 @@ const ActiveDelivery: React.FC = () => {
                       })}
                     </ul>
 
+                    {/* NUEVO: Modal para ver comprobante */}
+                    {showProofModal && (
+                      <div className="fixed z-20 inset-0 overflow-y-auto">
+                        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                          <div
+                            className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                            onClick={() => setShowProofModal(false)}
+                          />
+                          <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+                            <div className="bg-white px-6 pt-6 pb-4">
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100">
+                                    <PhotoIcon className="h-5 w-5 text-blue-600" />
+                                  </div>
+                                  <h3 className="text-lg font-semibold text-gray-900">Comprobante de entrega</h3>
+                                </div>
+                                <button
+                                  onClick={() => setShowProofModal(false)}
+                                  className="text-gray-400 hover:text-gray-500"
+                                >
+                                  <XCircleIcon className="h-6 w-6" />
+                                </button>
+                              </div>
+
+                              <div className="mt-4 flex justify-center">
+                                {proofImageUrl && (
+                                  <img
+                                    src={proofImageUrl}
+                                    alt="Comprobante de entrega"
+                                    className="max-w-full max-h-[70vh] rounded-lg object-contain"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                            <div className="bg-gray-50 px-6 py-4 flex justify-end">
+                              <button
+                                onClick={() => setShowProofModal(false)}
+                                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                              >
+                                Cerrar
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Paginación historial */}
                     {historyTotalPages > 1 && (
                       <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between">
@@ -494,6 +627,118 @@ const ActiveDelivery: React.FC = () => {
               </div>
             </section>
           </>
+        )}
+
+        {/* Modal de Imagen de Entrega */}
+        {showImageModal && selectedImageDelivery && (
+          <div className="fixed z-10 inset-0 overflow-y-auto">
+            <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div
+                className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                onClick={() => {
+                  setShowImageModal(false);
+                  setSelectedImageDelivery(null);
+                  setProofImage(null);
+                  setImagePreview(null);
+                }}
+              />
+              <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div className="bg-white px-6 pt-6 pb-4">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100">
+                      <CameraIcon className="h-5 w-5 text-green-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">Comprobante de entrega</h3>
+                  </div>
+
+                  <p className="text-sm text-gray-500 mb-4">
+                    Toma o sube una foto del comprobante de entrega. Esta imagen es obligatoria para marcar la orden como entregada.
+                  </p>
+
+                  {/* Área de selección de imagen */}
+                  <div
+                    className="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:border-green-500 transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <div className="space-y-1 text-center">
+                      {imagePreview ? (
+                        <div className="relative">
+                          <img
+                            src={imagePreview}
+                            alt="Vista previa"
+                            className="mx-auto h-48 w-auto rounded-lg object-cover"
+                          />
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setProofImage(null);
+                              setImagePreview(null);
+                            }}
+                            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                          >
+                            <XCircleIcon className="h-5 w-5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
+                          <div className="flex text-sm text-gray-600">
+                            <label className="relative cursor-pointer rounded-md font-medium text-green-600 hover:text-green-500">
+                              <span>Sube una imagen</span>
+                              <input
+                                ref={fileInputRef}
+                                type="file"
+                                className="sr-only"
+                                accept="image/*"
+                                onChange={handleImageSelect}
+                              />
+                            </label>
+                            <p className="pl-1">o arrastra y suelta</p>
+                          </div>
+                          <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 5MB</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <p className="mt-2 text-xs text-gray-500">
+                    Orden #{selectedImageDelivery.order_id.slice(0, 8)}
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 px-6 py-4 flex gap-3 justify-end">
+                  <button
+                    onClick={() => {
+                      setShowImageModal(false);
+                      setSelectedImageDelivery(null);
+                      setProofImage(null);
+                      setImagePreview(null);
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleMarkDeliveredWithImage}
+                    disabled={!proofImage || uploadingImage}
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {uploadingImage ? (
+                      <>
+                        <Spinner size="sm" />
+                        <span className="ml-2">Subiendo...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircleIcon className="h-4 w-4 mr-2" />
+                        Confirmar entrega
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Modal Ver Orden */}

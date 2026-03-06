@@ -34,19 +34,21 @@ export class TypeOrmDeliveryRepository implements DeliveryRepository {
       assignedAt:     entity.assignedAt,
       deliveredAt:    entity.deliveredAt,
       cancelReason:   entity.cancelReason,
+      proofImageUrl:  entity.proofImageUrl,
     };
     return new Delivery(props);
   }
 
   private toEntity(delivery: Delivery): DeliveryEntity {
-    const entity          = new DeliveryEntity();
-    entity.id             = delivery.id;
-    entity.orderId        = delivery.orderId;
-    entity.deliveryUserId = delivery.deliveryUserId;
-    entity.status         = delivery.status;
-    entity.assignedAt     = delivery.assignedAt;
-    entity.deliveredAt    = delivery.deliveredAt;
-    entity.cancelReason   = delivery.cancelReason;
+    const entity           = new DeliveryEntity();
+    entity.id              = delivery.id;
+    entity.orderId         = delivery.orderId;
+    entity.deliveryUserId  = delivery.deliveryUserId;
+    entity.status          = delivery.status;
+    entity.assignedAt      = delivery.assignedAt;
+    entity.deliveredAt     = delivery.deliveredAt;
+    entity.cancelReason    = delivery.cancelReason;
+    entity.proofImageUrl   = delivery.proofImageUrl;
     return entity;
   }
 
@@ -78,14 +80,12 @@ export class TypeOrmDeliveryRepository implements DeliveryRepository {
       .where('delivery.deliveryUserId = :deliveryUserId', { deliveryUserId })
       .orderBy('delivery.assignedAt', 'DESC');
 
-    // Filtro opcional por status
     if (statusFilter) {
       qb.andWhere('delivery.status = :status', { status: statusFilter });
     }
 
-    // Paginación
     const safePage  = Math.max(1, page);
-    const safeLimit = Math.min(Math.max(1, limit), 100); // máximo 100 por página
+    const safeLimit = Math.min(Math.max(1, limit), 100);
     qb.skip((safePage - 1) * safeLimit).take(safeLimit);
 
     const [entities, total] = await qb.getManyAndCount();

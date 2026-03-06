@@ -9,6 +9,7 @@ import {
   IsString,
   IsInt,
   IsPositive,
+  IsNotEmpty,
   Min,
   Max,
 } from 'class-validator';
@@ -41,6 +42,16 @@ export class UpdateDeliveryStatusRequestDto {
   @IsOptional()
   @IsString()
   cancel_reason?: string;
+
+  /**
+   * Foto de prueba de entrega en base64.
+   * Obligatoria cuando status = ENTREGADA.
+   * La validación de presencia se hace en el UseCase para mantener la lógica en el dominio.
+   */
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty({ message: 'proof_image_url no puede ser una cadena vacía si se proporciona' })
+  proof_image_url?: string;
 }
 
 // ── GetDelivery ───────────────────────────────────────────────
@@ -65,7 +76,7 @@ export class ListDeliveriesRequestDto {
   @IsEnum(FILTERABLE_STATUSES, {
     message: `status_filter debe ser uno de: ${FILTERABLE_STATUSES.join(', ')}`,
   })
-  status_filter?: string; // "" vacío o ausente = todas
+  status_filter?: string;
 
   @IsOptional()
   @Type(() => Number)

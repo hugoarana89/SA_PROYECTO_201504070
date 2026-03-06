@@ -60,7 +60,14 @@ const AvailableDeliveries: React.FC = () => {
       .map((d) => d.order_id)
   );
 
-  const availableOrders = orders.filter((o) => !activeOrderIds.has(o.id));
+  // quitar ordenes que hayan sido canceladas por repartidores
+  const cancelledOrderIds = new Set(
+    myDeliveries
+      .filter((d) => d.status === 'CANCELADA')
+      .map((d) => d.order_id)
+  );
+
+  const availableOrders = orders.filter((o) => !activeOrderIds.has(o.id) && !cancelledOrderIds.has(o.id));
 
   const handleAcceptOrder = async (order: Order) => {
     try {

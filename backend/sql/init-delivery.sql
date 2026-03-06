@@ -13,8 +13,8 @@ CREATE TABLE
         status ENUM ('EN_CAMINO', 'ENTREGADA', 'CANCELADA') NOT NULL,
         assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         delivered_at TIMESTAMP NULL,
-        -- FASE 2: URL de la foto de entrega obligatoria almacenada en Google Cloud Storage
-        proof_image_url VARCHAR(1000) NULL COMMENT 'URL GCS con la fotografía de entrega obligatoria',
+        -- FASE 2: URL de la foto de entrega obligatoria almacenada en base64
+        proof_image_url MEDIUMTEXT NULL COMMENT 'URL en base 64',
         cancel_reason VARCHAR(255),
         INDEX idx_order (order_id),
         INDEX idx_delivery_user_id (delivery_user_id),

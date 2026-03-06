@@ -19,17 +19,17 @@ import {
 } from '@nestjs/common';
 
 import { DeliveryService } from './delivery.service';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
-import { Role } from '../common/enums/role.enum';
+import { JwtAuthGuard }    from '../common/guards/jwt-auth.guard';
+import { RolesGuard }      from '../common/guards/roles.guard';
+import { Roles }           from '../common/decorators/roles.decorator';
+import { Role }            from '../common/enums/role.enum';
 import * as deliveryGrpcInterface from './grpc/delivery.grpc.interface';
 
 @Controller('delivery')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.REPARTIDOR)
 export class DeliveryController {
-  constructor(private readonly deliveryService: DeliveryService) { }
+  constructor(private readonly deliveryService: DeliveryService) {}
 
   // ── GET /delivery ─────────────────────────────────────────
   /**
@@ -43,8 +43,8 @@ export class DeliveryController {
   async listDeliveries(
     @Request() req,
     @Query('status') statusFilter?: deliveryGrpcInterface.DeliveryStatusFilter,
-    @Query('page') page: string = '1',
-    @Query('limit') limit: string = '10',
+    @Query('page')   page: string = '1',
+    @Query('limit')  limit: string = '10',
   ) {
     return this.deliveryService.listDeliveries(
       req.user.userId,
@@ -66,7 +66,7 @@ export class DeliveryController {
     @Request() req,
   ) {
     return this.deliveryService.acceptOrder({
-      order_id: orderId,
+      order_id:         orderId,
       delivery_user_id: req.user.userId,
     });
   }
@@ -74,21 +74,29 @@ export class DeliveryController {
   // ── PATCH /delivery/:deliveryId/status ────────────────────
   /**
    * El repartidor actualiza el estado de su entrega.
-   * Body: { status: "ENTREGADA" | "CANCELADA", cancel_reason?: string }
-   *
-   * El deliveryId va en la ruta (no en req.user) para que el endpoint
-   * sea explícito y fácil de probar/documentar.
+   * Body: {
+   *   status: "ENTREGADA" | "CANCELADA",
+   *   cancel_reason?: string,
+   *   proof_image_url?: string  ← obligatorio cuando status = "ENTREGADA"
+   * }
    */
   @Patch(':deliveryId/status')
   async updateDeliveryStatus(
     @Param('deliveryId') deliveryId: string,
-    @Body() body: { status: deliveryGrpcInterface.DeliveryStatus; cancel_reason?: string },
+    @Body() body: {
+      status:           deliveryGrpcInterface.DeliveryStatus;
+      cancel_reason?:   string;
+      proof_image_url?: string;
+    },
     @Request() req,
   ) {
+    console.log("imprimiendo");
+    console.log(body.proof_image_url);
     return this.deliveryService.updateDeliveryStatus({
-      delivery_id:   deliveryId,
-      status:        body.status,
-      cancel_reason: body.cancel_reason ?? '',
+      delivery_id:    deliveryId,
+      status:         body.status,
+      cancel_reason:  body.cancel_reason  ?? '',
+      proof_image_url: body.proof_image_url ?? '',
     });
   }
 

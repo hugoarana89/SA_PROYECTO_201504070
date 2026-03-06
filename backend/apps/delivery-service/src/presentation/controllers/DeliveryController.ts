@@ -60,15 +60,19 @@ export class DeliveryController {
   async updateDeliveryStatus(@Payload() data: UpdateDeliveryStatusRequestDto) {
     try {
       const delivery = await this.updateDeliveryStatusUseCase.execute({
-        deliveryId:   data.delivery_id,
-        status:       STATUS_GRPC_TO_DOMAIN[data.status],
-        cancelReason: data.cancel_reason,
+        deliveryId:    data.delivery_id,
+        status:        STATUS_GRPC_TO_DOMAIN[data.status],
+        cancelReason:  data.cancel_reason,
+        proofImageUrl: data.proof_image_url,
       });
 
       return { delivery: this.mapToGrpc(delivery) };
     } catch (error) {
       if (error.message.includes('no encontrada')) {
         throw new RpcException({ code: status.NOT_FOUND, message: error.message });
+      }
+      if (error.message.includes('proof_image_url') || error.message.includes('foto de prueba')) {
+        throw new RpcException({ code: status.INVALID_ARGUMENT, message: error.message });
       }
       throw new RpcException({ code: status.FAILED_PRECONDITION, message: error.message });
     }
@@ -78,11 +82,6 @@ export class DeliveryController {
   @GrpcValidate(GetDeliveryRequestDto, 'GetDelivery')
   async getDelivery(@Payload() data: GetDeliveryRequestDto) {
     try {
-      // Reutilizamos el repositorio a través del UpdateUseCase sería incorrecto (SRP).
-      // GetDelivery es solo una consulta: la hacemos directamente desde el caso de uso
-      // de lista con un filtro por ID, o idealmente con un GetDeliveryUseCase propio.
-      // Por ahora lo resolvemos con el UpdateUseCase para no agregar complejidad,
-      // pero en un sistema más grande crearíamos GetDeliveryUseCase.
       throw new RpcException({
         code:    status.UNIMPLEMENTED,
         message: 'Método GetDelivery no implementado. Para obtener una entrega por ID, use ListDeliveries con un filtro por ID.',
@@ -97,7 +96,6 @@ export class DeliveryController {
   @GrpcValidate(ListDeliveriesRequestDto, 'ListDeliveries')
   async listDeliveries(@Payload() data: ListDeliveriesRequestDto) {
     try {
-      // Convertir status_filter string → DeliveryStatus del dominio (o undefined si vacío)
       const statusFilter = data.status_filter
         ? STATUS_GRPC_TO_DOMAIN[data.status_filter as DeliveryStatusGrpc]
         : undefined;
@@ -130,7 +128,8 @@ export class DeliveryController {
       status:           delivery.status,
       assigned_at:      delivery.assignedAt?.toISOString()  ?? '',
       delivered_at:     delivery.deliveredAt?.toISOString() ?? '',
-      cancel_reason:    delivery.cancelReason ?? '',
+      cancel_reason:    delivery.cancelReason   ?? '',
+      proof_image_url:  delivery.proofImageUrl  ?? '',
     };
   }
 }

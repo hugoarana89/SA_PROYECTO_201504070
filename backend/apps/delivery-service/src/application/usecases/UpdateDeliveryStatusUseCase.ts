@@ -7,13 +7,15 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 
-import { Delivery, DeliveryStatus }                from '../../domain/entities/Delivery';
-import * as DeliveryRepository from '../../domain/ports/DeliveryRepository';
+import { Delivery, DeliveryStatus }   from '../../domain/entities/Delivery';
+import * as DeliveryRepository        from '../../domain/ports/DeliveryRepository';
 
 export interface UpdateDeliveryStatusInput {
-  deliveryId:    string;
-  status:        DeliveryStatus;
-  cancelReason?: string;
+  deliveryId:     string;
+  status:         DeliveryStatus;
+  cancelReason?:  string;
+  /** Imagen de prueba de entrega en base64. Obligatoria para status ENTREGADA. */
+  proofImageUrl?: string;
 }
 
 @Injectable()
@@ -32,7 +34,8 @@ export class UpdateDeliveryStatusUseCase {
 
     switch (input.status) {
       case DeliveryStatus.ENTREGADA:
-        delivery.markAsDelivered();
+        // markAsDelivered valida que proofImageUrl no esté vacío
+        delivery.markAsDelivered(input.proofImageUrl ?? '');
         break;
 
       case DeliveryStatus.CANCELADA:

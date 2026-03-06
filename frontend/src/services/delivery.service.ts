@@ -13,6 +13,7 @@ export interface DeliveryItem {
   assigned_at: string;
   delivered_at: string;
   cancel_reason: string;
+  proof_image_url?: string; // Nuevo campo opcional
 }
 
 export interface DeliveriesResponse {
@@ -29,6 +30,13 @@ export interface AcceptOrderResponse {
 export interface UpdateStatusDto {
   status: 2 | 3; // 2 = Entregada, 3 = Cancelada
   cancel_reason?: string;
+  proof_image_url?: string; // Nuevo campo para la imagen
+}
+
+// Nuevo tipo para la respuesta de subida de imagen
+export interface UploadImageResponse {
+  url: string;
+  filename: string;
 }
 
 export const deliveryService = {
@@ -55,6 +63,16 @@ export const deliveryService = {
       throw new Error(error.message || 'Error al actualizar estado');
     }
     return response.json();
+  },
+
+  // Método auxiliar para convertir File a base64
+  async fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
   },
 
   // Obtener entregas del repartidor autenticado

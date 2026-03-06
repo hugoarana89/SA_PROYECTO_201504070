@@ -19,6 +19,7 @@ export interface DeliveryProps {
   assignedAt:     Date;
   deliveredAt?:   Date | null;
   cancelReason?:  string | null;
+  proofImageUrl?: string | null;
 }
 
 export class Delivery {
@@ -29,21 +30,24 @@ export class Delivery {
   readonly assignedAt:     Date;
   private _deliveredAt:    Date | null;
   private _cancelReason:   string | null;
+  private _proofImageUrl:  string | null;
 
   constructor(props: DeliveryProps) {
-    this.id             = props.id;
-    this.orderId        = props.orderId;
-    this.deliveryUserId = props.deliveryUserId;
-    this._status        = props.status;
-    this.assignedAt     = props.assignedAt;
-    this._deliveredAt   = props.deliveredAt ?? null;
-    this._cancelReason  = props.cancelReason ?? null;
+    this.id              = props.id;
+    this.orderId         = props.orderId;
+    this.deliveryUserId  = props.deliveryUserId;
+    this._status         = props.status;
+    this.assignedAt      = props.assignedAt;
+    this._deliveredAt    = props.deliveredAt  ?? null;
+    this._cancelReason   = props.cancelReason ?? null;
+    this._proofImageUrl  = props.proofImageUrl ?? null;
   }
 
   // ── Getters ──────────────────────────────────────────────
-  get status():       DeliveryStatus { return this._status; }
-  get deliveredAt():  Date | null    { return this._deliveredAt; }
-  get cancelReason(): string | null  { return this._cancelReason; }
+  get status():        DeliveryStatus { return this._status; }
+  get deliveredAt():   Date | null    { return this._deliveredAt; }
+  get cancelReason():  string | null  { return this._cancelReason; }
+  get proofImageUrl(): string | null  { return this._proofImageUrl; }
 
   // ── Reglas de negocio ────────────────────────────────────
 
@@ -57,15 +61,22 @@ export class Delivery {
     this._status = DeliveryStatus.EN_CAMINO;
   }
 
-  /** Marca la entrega como ENTREGADA */
-  markAsDelivered(): void {
+  /**
+   * Marca la entrega como ENTREGADA.
+   * Requiere una foto de prueba de entrega (base64).
+   */
+  markAsDelivered(proofImageUrl: string): void {
     if (this._status !== DeliveryStatus.EN_CAMINO) {
       throw new Error(
         `No se puede marcar como ENTREGADA una entrega con estado '${this._status}'. Estado requerido: EN_CAMINO`,
       );
     }
-    this._status      = DeliveryStatus.ENTREGADA;
-    this._deliveredAt = new Date();
+    if (!proofImageUrl?.trim()) {
+      throw new Error('Se requiere la foto de prueba de entrega (proof_image_url).');
+    }
+    this._status        = DeliveryStatus.ENTREGADA;
+    this._deliveredAt   = new Date();
+    this._proofImageUrl = proofImageUrl;
   }
 
   /** Cancela la entrega con un motivo obligatorio */
