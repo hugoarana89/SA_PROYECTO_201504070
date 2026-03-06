@@ -13,6 +13,7 @@ import {
   CubeIcon,
   UserCircleIcon,
   BookOpenIcon,
+  WalletIcon,
 } from "@heroicons/react/24/outline";
 
 const NavBar = () => {
@@ -162,6 +163,37 @@ const NavBar = () => {
                       Mis Órdenes
                     </span>
                   </NavLink>
+
+                  <NavLink
+                    to="/client/wallet"
+                    className={({ isActive }) =>
+                      `${linkClass} ${isActive ? activeClass : inactiveClass}`
+                    }
+                    title="Mi Billetera"
+                  >
+                    <WalletIcon className="w-5 h-5 flex-shrink-0" />
+                    <span className={`transition-all duration-300 whitespace-nowrap ${
+                      isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 absolute"
+                    }`}>
+                      Mi Billetera
+                    </span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/client/payments"
+                    className={({ isActive }) =>
+                      `${linkClass} ${isActive ? activeClass : inactiveClass}`
+                    }
+                    title="Mis Pagos"
+                  > 
+                    <ClipboardDocumentListIcon className="w-5 h-5 flex-shrink-0" />
+                    <span className={`transition-all duration-300 whitespace-nowrap ${
+                      isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 absolute"
+                    }`}>
+                      Mis Pagos
+                    </span>
+                  </NavLink>
+
                 </>
               )}
 
@@ -227,6 +259,37 @@ const NavBar = () => {
                       Órdenes
                     </span>
                   </NavLink>
+
+                  <NavLink
+                    to="/admin/reembolso"
+                    className={({ isActive }) =>
+                      `${linkClass} ${isActive ? activeClass : inactiveClass}`
+                    }
+                    title="Reembolsos"
+                  >
+                    <WalletIcon className="w-5 h-5 flex-shrink-0" />
+                    <span className={`transition-all duration-300 whitespace-nowrap ${
+                      isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 absolute"
+                    }`}>
+                      Reembolsos
+                    </span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/admin/coupons"
+                    className={({ isActive }) =>
+                      `${linkClass} ${isActive ? activeClass : inactiveClass}`
+                    }
+                    title="Cupones"
+                  >
+                    <BookOpenIcon className="w-5 h-5 flex-shrink-0" />
+                    <span className={`transition-all duration-300 whitespace-nowrap ${
+                      isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 absolute"
+                    }`}>
+                      Cupones
+                    </span>
+                  </NavLink>
+                  
                 </>
               )}
 

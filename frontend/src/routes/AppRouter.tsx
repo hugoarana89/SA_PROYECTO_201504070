@@ -1,32 +1,35 @@
 import { createBrowserRouter } from "react-router-dom";
 
-import PrivateRoute from "./PrivateRoute";
-import PublicRoute from "./PublicRoute";
-import NavBar from "../components/NavBar";
-import Login from "../pages/auth/Login";
-import Register from "../pages/auth/Register";
-import AdminRestaurants from "../pages/admin/AdminRestaurants";
-import AdminUsers from "../pages/admin/AdminUsers";
-import HomeCatalog from "../pages/client/HomeCatalog";
-import RestaurantMenu from "../pages/client/RestaurantMenu";
-import MyOrders from "../pages/client/MyOrders";
-import IncomingOrders from "../pages/restaurant/IncomingOrders";
-import ManageMenu from "../pages/restaurant/ManageMenu";
+import PrivateRoute       from "./PrivateRoute";
+import PublicRoute        from "./PublicRoute";
+import NavBar             from "../components/NavBar";
+import Login              from "../pages/auth/Login";
+import Register           from "../pages/auth/Register";
+import AdminRestaurants   from "../pages/admin/AdminRestaurants";
+import AdminUsers         from "../pages/admin/AdminUsers";
+import AdminMenus         from "../pages/admin/AdminMenus";
+import AdminOrders        from "../pages/admin/AdminOrders";
+import AdminReembolso     from "../pages/admin/AdminReembolso";
+import AdminCoupons       from "../pages/admin/AdminCoupons";
+import HomeCatalog        from "../pages/client/HomeCatalog";
+import RestaurantMenu     from "../pages/client/RestaurantMenu";
+import MyOrders           from "../pages/client/MyOrders";
+import MyWallet           from "../pages/client/MyWallet";
+import MyPayments         from "../pages/client/MyPayments";
+import IncomingOrders     from "../pages/restaurant/IncomingOrders";
+import ManageMenu         from "../pages/restaurant/ManageMenu";
 import AvailableDeliveries from "../pages/delivery/AvailableDeliveries";
-import ActiveDelivery from "../pages/delivery/ActiveDelivery";
-import NotFound from "../pages/errors/NotFound";
-import Unauthorized from "../pages/errors/Unauthorized";
-import AdminMenus from "../pages/admin/AdminMenus";
-import AdminOrders from "../pages/admin/AdminOrders";
+import ActiveDelivery     from "../pages/delivery/ActiveDelivery";
+import NotFound           from "../pages/errors/NotFound";
+import Unauthorized       from "../pages/errors/Unauthorized";
 
 export const RouterApp = createBrowserRouter([
-  // Ruta principal con layout
   {
     path: "/",
     element: <NavBar />,
     errorElement: <NotFound />,
     children: [
-      // CLIENTE - Requiere rol CLIENTE
+      // ── CLIENTE ────────────────────────────────────────────
       {
         index: true,
         element: (
@@ -51,8 +54,25 @@ export const RouterApp = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+      // ── Nuevas rutas de pagos (CLIENTE) ───────────────────
+      {
+        path: "client/wallet",
+        element: (
+          <PrivateRoute roles={['CLIENTE']}>
+            <MyWallet />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "client/payments",
+        element: (
+          <PrivateRoute roles={['CLIENTE']}>
+            <MyPayments />
+          </PrivateRoute>
+        ),
+      },
 
-      // ADMIN - Requiere rol ADMINISTRADOR
+      // ── ADMINISTRADOR ──────────────────────────────────────
       {
         path: "admin/restaurants",
         element: (
@@ -85,8 +105,25 @@ export const RouterApp = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+      // ── Nueva ruta de cupones (ADMIN) ─────────────────────
+      {
+        path: "admin/coupons",
+        element: (
+          <PrivateRoute roles={['ADMINISTRADOR']}>
+            <AdminCoupons />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "admin/reembolso",
+        element: (
+          <PrivateRoute roles={['ADMINISTRADOR']}>
+            <AdminReembolso />
+          </PrivateRoute>
+        )
+      },
 
-      // RESTAURANTE - Requiere rol RESTAURANTE
+      // ── RESTAURANTE ────────────────────────────────────────
       {
         path: "restaurant/orders",
         element: (
@@ -104,7 +141,7 @@ export const RouterApp = createBrowserRouter([
         ),
       },
 
-      // REPARTIDOR - Requiere rol REPARTIDOR
+      // ── REPARTIDOR ─────────────────────────────────────────
       {
         path: "delivery/available",
         element: (
@@ -122,29 +159,12 @@ export const RouterApp = createBrowserRouter([
         ),
       },
 
-      // ERRORES
-      {
-        path: "unauthorized",
-        element: <Unauthorized />,
-      },
+      // ── ERRORES ────────────────────────────────────────────
+      { path: "unauthorized", element: <Unauthorized /> },
     ],
   },
 
-  // PUBLIC ROUTES
-  {
-    path: "/login",
-    element: (
-      <PublicRoute>
-        <Login />
-      </PublicRoute>
-    ),
-  },
-  {
-    path: "/register",
-    element: (
-      <PublicRoute>
-        <Register />
-      </PublicRoute>
-    ),
-  },
+  // ── PUBLIC ─────────────────────────────────────────────────
+  { path: "/login",    element: <PublicRoute><Login /></PublicRoute> },
+  { path: "/register", element: <PublicRoute><Register /></PublicRoute> },
 ]);

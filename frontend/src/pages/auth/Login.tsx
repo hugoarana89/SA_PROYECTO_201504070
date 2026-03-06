@@ -50,6 +50,27 @@ const Login = () => {
 
       const data = await response.json();
 
+      //primero comprobar si el usuario ya tiene wallet, si no, crearla
+      const walletResponse = await fetch(`${CONFIG.API_URL}/wallet/me`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${data.accessToken}`,
+        },
+      });
+
+      if (walletResponse.status === 404) {
+        // Si no tiene wallet, crearla
+        await fetch(`${CONFIG.API_URL}/payment/wallet`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${data.accessToken}`,
+          },
+          body: JSON.stringify({}),
+        });
+      }
+      
       // Guardar sesión con la estructura esperada del primer login
       setSession({
         accessToken: data.accessToken,

@@ -1,0 +1,225 @@
+syntax = "proto3";
+
+package payment;
+
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+enum TransactionType {
+  RECARGA   = 0;
+  PAGO      = 1;
+  REEMBOLSO = 2;
+}
+
+enum DiscountType {
+  PORCENTAJE = 0;
+  MONTO_FIJO = 1;
+}
+
+enum PaymentMethod {
+  TARJETA_CREDITO = 0;
+  TARJETA_DEBITO  = 1;
+  CARTERA_DIGITAL = 2;
+}
+
+enum PaymentStatus {
+  PENDIENTE   = 0;
+  PAGADO      = 1;
+  FALLIDO     = 2;
+  REEMBOLSADO = 3;
+}
+
+// ─────────────────────────────────────────────
+// Shared Messages
+// ─────────────────────────────────────────────
+message Wallet {
+  string id         = 1;
+  string user_id    = 2;
+  double balance    = 3;
+  string created_at = 4;
+  string updated_at = 5;
+}
+
+message WalletTransaction {
+  string          id          = 1;
+  string          wallet_id   = 2;
+  TransactionType type        = 3;
+  double          amount      = 4;
+  string          description = 5;
+  string          created_at  = 6;
+}
+
+message Coupon {
+  string       id               = 1;
+  string       code             = 2;
+  DiscountType discount_type    = 3;
+  double       discount_value   = 4;
+  double       min_order_amount = 5;
+  int32        max_uses         = 6;
+  int32        current_uses     = 7;
+  string       expires_at       = 8;
+  bool         is_active        = 9;
+  string       created_at       = 10;
+}
+
+message Payment {
+  string        id               = 1;
+  string        order_id         = 2;
+  string        user_id          = 3;
+  PaymentMethod method           = 4;
+  PaymentStatus status           = 5;
+  double        amount           = 6;
+  string        coupon_id        = 7;
+  double        discount_applied = 8;
+  double        final_amount     = 9;
+  string        created_at       = 10;
+  string        updated_at       = 11;
+}
+
+// ─────────────────────────────────────────────
+// Wallet Messages
+// ─────────────────────────────────────────────
+message CreateWalletRequest  { string user_id   = 1; }
+message CreateWalletResponse { Wallet wallet    = 1; }
+
+message GetWalletByUserRequest  { string user_id   = 1; }
+message GetWalletByUserResponse { Wallet wallet    = 1; }
+
+message GetWalletByIdRequest  { string wallet_id  = 1; }
+message GetWalletByIdResponse { Wallet wallet     = 1; }
+
+message RechargeWalletRequest {
+  string user_id     = 1;
+  double amount      = 2;
+  string description = 3;
+}
+message RechargeWalletResponse { Wallet wallet = 1; }
+
+message ListTransactionsRequest {
+  string wallet_id = 1;
+  int32  page      = 2;
+  int32  limit     = 3;
+}
+message ListTransactionsResponse {
+  repeated WalletTransaction transactions = 1;
+  int32 total = 2;
+  int32 page  = 3;
+  int32 limit = 4;
+}
+
+// ─────────────────────────────────────────────
+// Coupon Messages
+// ─────────────────────────────────────────────
+message CreateCouponRequest {
+  string       code             = 1;
+  DiscountType discount_type    = 2;
+  double       discount_value   = 3;
+  double       min_order_amount = 4;
+  int32        max_uses         = 5;
+  string       expires_at       = 6;
+}
+message CreateCouponResponse { Coupon coupon = 1; }
+
+message GetCouponByIdRequest  { string coupon_id = 1; }
+message GetCouponByIdResponse { Coupon coupon    = 1; }
+
+message GetCouponByCodeRequest  { string code   = 1; }
+message GetCouponByCodeResponse { Coupon coupon = 1; }
+
+message ListCouponsRequest {
+  int32 page  = 1;
+  int32 limit = 2;
+}
+message ListCouponsResponse {
+  repeated Coupon coupons = 1;
+  int32 total = 2;
+  int32 page  = 3;
+  int32 limit = 4;
+}
+
+message UpdateCouponRequest {
+  string coupon_id        = 1;
+  double discount_value   = 2;
+  double min_order_amount = 3;
+  int32  max_uses         = 4;
+  string expires_at       = 5;
+  bool   is_active        = 6;
+}
+message UpdateCouponResponse { Coupon coupon = 1; }
+
+message DeleteCouponRequest  { string coupon_id = 1; }
+message DeleteCouponResponse { bool success = 1; string message = 2; }
+
+message ValidateCouponRequest {
+  string code         = 1;
+  double order_amount = 2;
+}
+message ValidateCouponResponse {
+  Coupon coupon          = 1;
+  double discount_amount = 2;
+}
+
+// ─────────────────────────────────────────────
+// Payment Messages
+// ─────────────────────────────────────────────
+message CreatePaymentRequest {
+  string        order_id    = 1;
+  string        user_id     = 2;
+  PaymentMethod method      = 3;
+  double        amount      = 4;
+  string        coupon_code = 5;
+}
+message CreatePaymentResponse { Payment payment = 1; }
+
+message GetPaymentByIdRequest  { string payment_id = 1; }
+message GetPaymentByIdResponse { Payment payment   = 1; }
+
+message GetPaymentByOrderRequest  { string order_id = 1; }
+message GetPaymentByOrderResponse { Payment payment  = 1; }
+
+message ListPaymentsRequest {
+  string user_id = 1;
+  string status  = 2;
+  int32  page    = 3;
+  int32  limit   = 4;
+}
+message ListPaymentsResponse {
+  repeated Payment payments = 1;
+  int32 total = 2;
+  int32 page  = 3;
+  int32 limit = 4;
+}
+
+message UpdatePaymentStatusRequest {
+  string payment_id = 1;
+  string status     = 2; // "PAGADO" | "FALLIDO" | "REEMBOLSADO"
+}
+message UpdatePaymentStatusResponse { Payment payment = 1; }
+
+// ─────────────────────────────────────────────
+// Service
+// ─────────────────────────────────────────────
+service PaymentService {
+  // Wallet
+  rpc CreateWallet     (CreateWalletRequest)     returns (CreateWalletResponse);
+  rpc GetWalletByUser  (GetWalletByUserRequest)  returns (GetWalletByUserResponse);
+  rpc GetWalletById    (GetWalletByIdRequest)    returns (GetWalletByIdResponse);
+  rpc RechargeWallet   (RechargeWalletRequest)   returns (RechargeWalletResponse);
+  rpc ListTransactions (ListTransactionsRequest) returns (ListTransactionsResponse);
+
+  // Coupon
+  rpc CreateCoupon    (CreateCouponRequest)    returns (CreateCouponResponse);
+  rpc GetCouponById   (GetCouponByIdRequest)   returns (GetCouponByIdResponse);
+  rpc GetCouponByCode (GetCouponByCodeRequest) returns (GetCouponByCodeResponse);
+  rpc ListCoupons     (ListCouponsRequest)     returns (ListCouponsResponse);
+  rpc UpdateCoupon    (UpdateCouponRequest)    returns (UpdateCouponResponse);
+  rpc DeleteCoupon    (DeleteCouponRequest)    returns (DeleteCouponResponse);
+  rpc ValidateCoupon  (ValidateCouponRequest)  returns (ValidateCouponResponse);
+
+  // Payment
+  rpc CreatePayment        (CreatePaymentRequest)        returns (CreatePaymentResponse);
+  rpc GetPaymentById       (GetPaymentByIdRequest)       returns (GetPaymentByIdResponse);
+  rpc GetPaymentByOrder    (GetPaymentByOrderRequest)    returns (GetPaymentByOrderResponse);
+  rpc ListPayments         (ListPaymentsRequest)         returns (ListPaymentsResponse);
+  rpc UpdatePaymentStatus  (UpdatePaymentStatusRequest)  returns (UpdatePaymentStatusResponse);
+}
