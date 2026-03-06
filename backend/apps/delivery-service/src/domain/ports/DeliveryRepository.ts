@@ -22,6 +22,7 @@ export interface PaginatedDeliveries {
 }
 
 export interface DeliveryRepository {
+  findAll(arg0: { statusFilter: DeliveryStatus | undefined; page: number; limit: number; }): PaginatedDeliveries | PromiseLike<PaginatedDeliveries>;
   /** Guarda una nueva entrega (INSERT) */
   save(delivery: Delivery): Promise<void>;
 

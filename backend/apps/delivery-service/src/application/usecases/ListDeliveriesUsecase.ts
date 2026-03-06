@@ -31,4 +31,12 @@ export class ListDeliveriesUseCase {
       limit:          input.limit,
     });
   }
+
+  async executeAll(input: Omit<ListDeliveriesInput, 'deliveryUserId'>): Promise<DeliveryRepositoryPort.PaginatedDeliveries> {
+    return this.deliveryRepository.findAll({
+      statusFilter: input.statusFilter,
+      page:        input.page,
+      limit:       input.limit,
+    });
+  }
 }

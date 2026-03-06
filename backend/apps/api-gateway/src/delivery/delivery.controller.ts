@@ -27,7 +27,7 @@ import * as deliveryGrpcInterface from './grpc/delivery.grpc.interface';
 
 @Controller('delivery')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.REPARTIDOR)
+@Roles(Role.REPARTIDOR, Role.ADMINISTRADOR)
 export class DeliveryController {
   constructor(private readonly deliveryService: DeliveryService) {}
 
@@ -48,6 +48,20 @@ export class DeliveryController {
   ) {
     return this.deliveryService.listDeliveries(
       req.user.userId,
+      statusFilter,
+      parseInt(page),
+      parseInt(limit),
+    );
+  }
+
+  // GET todos los pedidos de la tabla deliveries
+  @Get('all')
+  async listAllDeliveries(
+    @Query('status') statusFilter?: deliveryGrpcInterface.DeliveryStatusFilter,
+    @Query('page')   page: string = '1',
+    @Query('limit')  limit: string = '10',
+  ) {
+    return this.deliveryService.listAllDeliveries(
       statusFilter,
       parseInt(page),
       parseInt(limit),

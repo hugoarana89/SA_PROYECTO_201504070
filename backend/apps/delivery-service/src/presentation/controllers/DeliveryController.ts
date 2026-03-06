@@ -12,7 +12,6 @@ import { GrpcValidate } from '../../infrastructure/grpc/decorator/grpc-validate.
 import {
   AcceptOrderRequestDto,
   UpdateDeliveryStatusRequestDto,
-  GetDeliveryRequestDto,
   ListDeliveriesRequestDto,
   DeliveryStatusGrpc,
 } from '../../infrastructure/grpc/dto/delivery.dto';
@@ -78,20 +77,6 @@ export class DeliveryController {
     }
   }
 
-  // ── GetDelivery ───────────────────────────────────────────
-  @GrpcValidate(GetDeliveryRequestDto, 'GetDelivery')
-  async getDelivery(@Payload() data: GetDeliveryRequestDto) {
-    try {
-      throw new RpcException({
-        code:    status.UNIMPLEMENTED,
-        message: 'Método GetDelivery no implementado. Para obtener una entrega por ID, use ListDeliveries con un filtro por ID.',
-      });
-    } catch (error) {
-      if (error instanceof RpcException) throw error;
-      throw new RpcException({ code: status.INTERNAL, message: error.message });
-    }
-  }
-
   // ── ListDeliveries ────────────────────────────────────────
   @GrpcValidate(ListDeliveriesRequestDto, 'ListDeliveries')
   async listDeliveries(@Payload() data: ListDeliveriesRequestDto) {
@@ -99,6 +84,22 @@ export class DeliveryController {
       const statusFilter = data.status_filter
         ? STATUS_GRPC_TO_DOMAIN[data.status_filter as DeliveryStatusGrpc]
         : undefined;
+
+      // si no viene delivery_user_id, es porque el admin quiere listar todas las entregas (sin filtrar por repartidor)
+      if (!data.delivery_user_id) {
+        const result = await this.listDeliveriesUseCase.executeAll({
+          statusFilter,
+          page:  data.page  ?? 1,
+          limit: data.limit ?? 10,
+        });
+
+        return {
+          deliveries: result.deliveries.map((d) => this.mapToGrpc(d)),
+          total:      result.total,
+          page:       result.page,
+          limit:      result.limit,
+        };
+      }
 
       const result = await this.listDeliveriesUseCase.execute({
         deliveryUserId: data.delivery_user_id,
@@ -113,6 +114,7 @@ export class DeliveryController {
         page:       result.page,
         limit:      result.limit,
       };
+
     } catch (error) {
       if (error instanceof RpcException) throw error;
       throw new RpcException({ code: status.INTERNAL, message: error.message || 'Error interno' });

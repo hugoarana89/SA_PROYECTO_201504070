@@ -54,12 +54,6 @@ export class UpdateDeliveryStatusRequestDto {
   proof_image_url?: string;
 }
 
-// ── GetDelivery ───────────────────────────────────────────────
-export class GetDeliveryRequestDto {
-  @IsUUID('4')
-  delivery_id: string;
-}
-
 // ── ListDeliveries ────────────────────────────────────────────
 // ASIGNADA no es filtrable: solo aplica a EN_CAMINO, ENTREGADA, CANCELADA
 const FILTERABLE_STATUSES = [
@@ -69,8 +63,9 @@ const FILTERABLE_STATUSES = [
 ] as const;
 
 export class ListDeliveriesRequestDto {
-  @IsUUID('4')
-  delivery_user_id: string;
+  @IsOptional()
+  //@IsUUID('4')
+  delivery_user_id?: string;
 
   @IsOptional()
   @IsEnum(FILTERABLE_STATUSES, {

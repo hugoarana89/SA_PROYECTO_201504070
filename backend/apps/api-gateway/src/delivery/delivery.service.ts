@@ -94,6 +94,27 @@ export class DeliveryService implements OnModuleInit {
     }
   }
 
+  // ── ListAllDeliveries (para ADMINISTRADOR) ────────────────────────
+  async listAllDeliveries(
+    statusFilter: DeliveryStatusFilter | undefined,
+    page:         number,
+    limit:        number,
+  ) {
+    
+    const request: ListDeliveriesRequest = { 
+      delivery_user_id: '', // Ignorado por el servicio gRPC cuando el rol es ADMINISTRADOR
+      status_filter:    statusFilter ?? '',
+      page,
+      limit,
+    };
+    
+    try {
+      return await lastValueFrom(this.deliveryGrpc.listDeliveries(request));
+    } catch (error) {
+      this.handleGrpcError(error);
+    }
+  }
+
   // ── Manejo de errores gRPC → HTTP ─────────────────────────
   private handleGrpcError(error: any): never {
     if (error instanceof HttpException) throw error;

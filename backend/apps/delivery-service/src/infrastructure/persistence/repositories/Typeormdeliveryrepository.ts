@@ -97,4 +97,30 @@ export class TypeOrmDeliveryRepository implements DeliveryRepository {
       limit: safeLimit,
     };
   }
+
+  // Método adicional para listar todas las entregas (sin filtrar por usuario)
+  async findAll(params: Omit<FindByUserParams, 'deliveryUserId'>): Promise<PaginatedDeliveries> {
+    const { statusFilter, page, limit } = params;
+    
+    const qb = this.repo
+      .createQueryBuilder('delivery')
+      .orderBy('delivery.assignedAt', 'DESC');
+
+    if (statusFilter) {
+      qb.where('delivery.status = :status', { status: statusFilter });
+    }
+
+    const safePage  = Math.max(1, page);
+    const safeLimit = Math.min(Math.max(1, limit), 100);
+    qb.skip((safePage - 1) * safeLimit).take(safeLimit);
+    
+    const [entities, total] = await qb.getManyAndCount();
+    
+    return {
+      deliveries: entities.map((e) => this.toDomain(e)),
+      total,
+      page:  safePage,
+      limit: safeLimit,
+    };
+  }
 }
